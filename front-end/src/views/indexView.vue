@@ -10,7 +10,9 @@
 </script>
 
 <template>
-
+  <div class="exit">
+    <el-button @click="userLogout" type="danger">退出登录</el-button>
+  </div>
 </template>
 
 <style scoped>

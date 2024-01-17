@@ -1,0 +1,32 @@
+spring:
+  security:
+    filter:
+      order: -100
+#    user:
+#      name: root
+#      password: root
+  jwt:
+    secret: This_Is_A_Secret
+    expire: 7
+  mail:
+    host: smtp.163.com
+    username: 18694214598@163.com
+    password: AWCWBARSESIIUUBL
+  rabbitmq:
+    addresses: localhost
+    username: admin
+    password: admin
+    virtual-host: /
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/forums?useUnicode=true&characterEncoding=utf8
+    username: root
+    password: root
+  data:
+    redis:
+      host: 127.0.0.1
+      database: 1
+      port: 6379
+      password: 123456
+server:
+  port: 8080
