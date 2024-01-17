@@ -2,7 +2,6 @@ package com.example.backend.service.Impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.backend.entity.RestBean;
 import com.example.backend.entity.dto.Account;
 import com.example.backend.entity.vo.request.ConfirmResetVO;
 import com.example.backend.entity.vo.request.EmailRegisterVO;
@@ -35,13 +34,14 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
     FlowUtils flowUtils;
     @Resource
     PasswordEncoder passwordEncoder;
+
     @Override
     /*
      * loadUserByUsername
      */
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Account account = findAccountByIdOrEmail(username);
-        if(account == null){
+        if (account == null) {
             throw new UsernameNotFoundException("!用户名或密码错误!");
         }
         return User
@@ -50,18 +50,19 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
                 .roles(account.getRole())
                 .build();
     }
-    public Account findAccountByIdOrEmail(String text){
+
+    public Account findAccountByIdOrEmail(String text) {
         return this.query()
-                .eq("username",text)
+                .eq("username", text)
                 .or()
-                .eq("email",text)
+                .eq("email", text)
                 .one();
     }
 
     @Override
     public String registerEmailVerifyCode(String type, String email, String ip) {
-        synchronized (ip.intern()){
-            if (!verifyLimit(ip)){
+        synchronized (ip.intern()) {
+            if (!verifyLimit(ip)) {
 //                return RestBean.failure(601,"请求过于频繁,请稍后再试!").asJsonString();
                 return "请求过于频繁,请稍后再试!";
             }
@@ -69,10 +70,10 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
 
             Random random = new Random();
             int code = random.nextInt(899999) + 100000;
-            Map<String,Object> data = Map.of("type",type,"email",email,"code",code);
-            amqpTemplate.convertAndSend("mail",data);
+            Map<String, Object> data = Map.of("type", type, "email", email, "code", code);
+            amqpTemplate.convertAndSend("mail", data);
 
-            stringRedisTemplate.opsForValue().set(Const.VERIFY_EMAIL_DATA+email,String.valueOf(code),3, TimeUnit.MINUTES);
+            stringRedisTemplate.opsForValue().set(Const.VERIFY_EMAIL_DATA + email, String.valueOf(code), 3, TimeUnit.MINUTES);
 
             return null;
         }
@@ -83,17 +84,17 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
     public String registerEmailAccount(EmailRegisterVO vo) {
         String username = vo.getUsername();
         String email = vo.getEmail();
-        String code = stringRedisTemplate.opsForValue().get(Const.VERIFY_EMAIL_DATA+email);
+        String code = stringRedisTemplate.opsForValue().get(Const.VERIFY_EMAIL_DATA + email);
         if (code == null) return "请先获取验证码";
-        if(!vo.getCode().equals(code)) return "验证码错误，请重新输入";
+        if (!vo.getCode().equals(code)) return "验证码错误，请重新输入";
         if (existAccountByEmail(email)) return "邮箱已被注册，请更换邮箱";
         if (existAccountByUsername(username)) return "用户名已被注册，请更换用户名";
         String password = passwordEncoder.encode(vo.getPassword());
-        Account account = new Account(null,username,password,email,"user",new Date());
+        Account account = new Account(null, username, password, email, "user", new Date());
         if (this.save(account)) {
-            stringRedisTemplate.delete(Const.VERIFY_EMAIL_DATA+email);
+            stringRedisTemplate.delete(Const.VERIFY_EMAIL_DATA + email);
             return null;
-        }else {
+        } else {
             return "发生错误！请联系管理员";
         }
     }
@@ -101,10 +102,10 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
     @Override
     public String resetConfirm(ConfirmResetVO resetVO) {
         String code = stringRedisTemplate.opsForValue().get(Const.VERIFY_EMAIL_DATA + resetVO.getEmail());
-        if(code == null){
+        if (code == null) {
             return "请先获取验证码";
         }
-        if(!code.equals(resetVO.getCode())){
+        if (!code.equals(resetVO.getCode())) {
             return "验证码错误，请重新输入";
         }
         return null;
@@ -114,31 +115,36 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
     @Override
     public String resetEmailAccountPassword(EmailResetVO resetVO) {
         String email = resetVO.getEmail();
-        String verify = this.resetConfirm(new ConfirmResetVO(email,resetVO.getCode()));
-        if (verify!=null)
+        String verify = this.resetConfirm(new ConfirmResetVO(email, resetVO.getCode()));
+        if (verify != null)
             return verify;
         String password = passwordEncoder.encode(resetVO.getPassword());
-        boolean update =  this.update().eq("email",email).set("password",password).update();
-        if(update){
-            stringRedisTemplate.delete(Const.VERIFY_EMAIL_DATA+email);
+        boolean update = this.update().eq("email", email).set("password", password).update();
+        if (update) {
+            stringRedisTemplate.delete(Const.VERIFY_EMAIL_DATA + email);
             return null;
-        }
-        else {
+        } else {
             return "更新了个寂寞";
         }
 
     }
 
-    private boolean existAccountByEmail(String email){
-        return this.baseMapper.exists(Wrappers.<Account>query().eq("email",email));
-    }
-    private boolean existAccountByUsername(String username){
-        return this.baseMapper.exists(Wrappers.<Account>query().eq("username",username));
+    private boolean existAccountByEmail(String email) {
+        return this.baseMapper.exists(Wrappers.<Account>query().eq("email", email));
     }
 
-    private boolean verifyLimit(String ip){
-        String key = Const.VERIFY_EMAIL_LIMIT+ip;
-        return flowUtils.limitOnceCheck(key,60);
+    private boolean existAccountByUsername(String username) {
+        return this.baseMapper.exists(Wrappers.<Account>query().eq("username", username));
     }
 
+    private boolean verifyLimit(String ip) {
+        String key = Const.VERIFY_EMAIL_LIMIT + ip;
+        return flowUtils.limitOnceCheck(key, 60);
+    }
+
+    @Override
+    public Account findAccountById(int userId) {
+
+        return this.getById(userId);
+    }
 }

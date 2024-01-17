@@ -22,4 +22,5 @@ Spring Security会取出用户提交的密码和UserDetailsService加载出来�
     String registerEmailAccount(EmailRegisterVO vo);
     String resetConfirm(ConfirmResetVO resetVO);
     String resetEmailAccountPassword(EmailResetVO resetVO);
+    Account findAccountById(int userId);
 }
