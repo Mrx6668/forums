@@ -24,7 +24,6 @@ const routes = createRouter({
                 {
                     // 当 URL 的路径部分为 "/welcome" 时，这个子路由规则会被匹配
                     path: "",
-
                     // 这个子路由规则的名字是 'welcome-login'
                     name: "welcome-login",
 
@@ -46,7 +45,20 @@ const routes = createRouter({
         {
             path: '/index',
             name: 'index',
-            component: () => import('../views/IndexView.vue')
+            // redirect: '/index/user-setting', // 重定向到
+            component: () => import('../views/IndexView.vue'),
+            children: [
+                {
+                  path: "post",
+                  name: "post",
+                  component:()=>import('../views/Post.vue')
+                },
+                {
+                    path: "user-setting",
+                    name: "user-setting",
+                    component: () => import('../views/settings/UserSetting.vue')
+                }
+            ]
         }
     ]
 })
@@ -57,7 +69,7 @@ routes.beforeEach((to, from, next) => {
     if (to.name.startsWith('welcome-') && !inUnauthorized) {
         next('/index');
         //登录情况下，如果用户访问登录页，直接跳转到首页
-    }else if (to.fullPath.startsWith('/index') && inUnauthorized) {
+    } else if (to.fullPath.startsWith('/index') && inUnauthorized) {
         next('/');
         //未登录情况下，如果用户访问首页，直接跳转到登录页
     } else {

@@ -15,6 +15,7 @@ import {
   Position,
   School, Search, User
 } from "@element-plus/icons-vue";
+import routes from "@/router";
 
 const store = useStore()
 const loading = ref(true)//加载效果
@@ -23,6 +24,7 @@ const searchInput = reactive({
   type:'1',
   text:''
 })
+
 get('api/user/info', (data) => {
   console.log(data);
   store.user = data
@@ -81,15 +83,14 @@ function userLogout() {
               </el-dropdown-menu>
             </template>
           </el-dropdown>
-
-
         </div>
       </el-header>
       <el-container>
         <el-aside width="230px" >
           <el-scrollbar style="height: calc(100vh - 55px);">
             <el-menu
-                default-active="1-1"
+                router
+                :default-active="$route.path"
                 style="min-height: calc(100vh - 55px);"
             >
               <el-sub-menu index="1">
@@ -97,7 +98,7 @@ function userLogout() {
                   <el-icon><Location/></el-icon>
                   <span><b>校园论坛</b></span>
                 </template>
-                <el-menu-item index="1-1">
+                <el-menu-item index="/index/post">
                   <template #title>
                     <el-icon><ChatDotSquare/></el-icon>
                     <b>帖子广场</b>
@@ -134,31 +135,31 @@ function userLogout() {
                   <el-icon><Position/></el-icon>
                   <span><b>探索发现</b></span>
                 </template>
-                <el-menu-item index="2-1">
+                <el-menu-item >
                   <template #title>
                     <el-icon><Document /></el-icon>
                     成绩查询
                   </template>
                 </el-menu-item>
-                <el-menu-item index="2-2">
+                <el-menu-item >
                   <template #title>
                     <el-icon><Files /></el-icon>
                     课程表
                   </template>
                 </el-menu-item>
-                <el-menu-item index="2-3">
+                <el-menu-item >
                   <template #title>
                     <el-icon><Monitor /></el-icon>
                     教务通知
                   </template>
                 </el-menu-item>
-                <el-menu-item index="2-4">
+                <el-menu-item >
                   <template #title>
                     <el-icon><Collection /></el-icon>
                     在线图书馆
                   </template>
                 </el-menu-item>
-                <el-menu-item index="2-5">
+                <el-menu-item>
                   <template #title>
                     <el-icon><DataLine /></el-icon>
                     预约
@@ -170,7 +171,7 @@ function userLogout() {
                   <el-icon><Operation /></el-icon>
                   <b>个人信息</b>
                 </template>
-                <el-menu-item index="3-1">
+                <el-menu-item index="/index/user-setting">
                   <template #title>
                     <el-icon><User /></el-icon>
                     个人信息设置
@@ -188,7 +189,18 @@ function userLogout() {
           </el-scrollbar>
 
         </el-aside>
-        <el-main>Main</el-main>
+        <el-main class="main-content-page" >
+          <el-scrollbar style="height: calc(100vh - 55px)">
+<!--           <router-view> 匹配到对应的路由组件,并通过 v-slot 解构传递给 Component 变量
+              将 Component变量动态绑定给 <component> 的 :is 属性
+                当路由切换时,Component 变量会改变,因此 <component> 也会切换不同的组件 -->
+            <router-view v-slot="{Component}">
+              <transition name="el-fade-in-linear" mode="out-in">
+                <component :is="Component" style="height: 100%"/>
+              </transition>
+            </router-view>
+          </el-scrollbar>
+        </el-main>
       </el-container>
     </el-container>
   </div>
@@ -204,7 +216,13 @@ function userLogout() {
   width: 100%;
   margin: 0;
 }
-
+.main-content-page{
+  padding: 0;
+  background-color: #f7f8fa;
+}
+.dark .main-content-page{
+  background-color: #212225;
+}
 .main-content-header {
   border-bottom: solid 1px var(--el-border-color);
   height: 55px;
