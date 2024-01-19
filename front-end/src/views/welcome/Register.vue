@@ -102,6 +102,11 @@ const  isEmailValid = computed(()=>{
 //   var pattern = /^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$/
 //   return pattern.test(form.email)
 // }
+defineExpose({
+  validateUsername
+})
+
+
 </script>
 
 <template>

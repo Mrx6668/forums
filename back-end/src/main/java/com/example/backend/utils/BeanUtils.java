@@ -3,10 +3,10 @@ package com.example.backend.utils;
 import java.lang.reflect.Constructor;
 
 public class BeanUtils {
-    public static Object copyBeans(Object source, Class<?> cla) {
+    public static <V> V copyBeans(Object source, Class<V> cla) {
         try {
-            Constructor<?> constructor = cla.getConstructor();
-            Object newIns = constructor.newInstance();
+            Constructor<V> constructor = cla.getConstructor();
+            V newIns = constructor.newInstance();
             org.springframework.beans.BeanUtils.copyProperties(source, newIns);
             return newIns;
         } catch (Exception e) {

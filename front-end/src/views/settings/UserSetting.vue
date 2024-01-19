@@ -2,60 +2,149 @@
 
 import Card from "@/components/Card.vue";
 import { Refresh, Select, User } from "@element-plus/icons-vue";
+import {ref} from "vue";
 import { Message } from "@element-plus/icons-vue";
 import { useStore } from "@/store";
-import { computed } from "vue";
+import { computed, reactive } from "vue";
+import {get, post} from "@/net";
+import {ElMessage} from "element-plus";
+
+
 const store = useStore()
 const registerTime = computed(() =>  new Date(store.user.registerTime).toLocaleString() )
 const TodayBetweenRegister = computed(() => {
   const registerDate = new Date(store.user.registerTime);
   const currentDate = new Date();
   const diffTime = Math.abs(currentDate - registerDate);
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays;
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+})
+const desc = ref()
+const validateUsername = (rule, value, callback) =>{
+  if(value === '') {
+    callback(new Error('请输入用户名'))
+  }else if (!/^[a-zA-Z0-9\u4e00-\u9fa5]+$/.test(value)){
+    callback(new Error("用户名不能包含特殊字符"))
+  }else {
+    callback()
+  }
+}
+
+const baseForm = reactive({
+  username:'',
+  gender:0,
+  phone:'',
+  qq:'',
+  wx:'',
+  desc:''
+})
+const emailForm = reactive({
+  email:'',
+  code:'',
+})
+
+const baseFormRef = ref()
+const emailFormRef = ref()
+
+const rules = {
+  username:[
+    {validator: validateUsername,trigger:['blur','change']},
+    {min: 3, max: 15, message: '用户名长度在3-15个字符之间', trigger:['blur','change']},
+  ],
+  email: [
+    {required: true, message: '请输入邮箱地址'},
+    {type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur', 'change']},
+  ],
+  code:[
+    {required: true, message: '请输入验证码'},
+    {min:6, max:6, message: '请输入长度为6的验证码', trigger: ['blur', 'change']},
+  ],
+  //phone电话正则表达式验证
+  phone:[
+    {pattern: /^1[3456789]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur'},
+    {required: true, message: '请输入手机号', trigger: 'blur'},
+  ]
+}
+
+const loading = reactive({
+  form: true,
+  base: false,
+  baseContent:false
+})
+function saveDetails(){
+  baseFormRef.value.validate((isValid)=>{
+    if (isValid){
+      loading.base = true
+      loading.baseContent = true
+      post('api/user/save-details',baseForm,()=>{
+        ElMessage.success('用户信息保存成功')
+        store.user.username = baseForm.username
+        desc.value = baseForm.desc
+        loading.base = false
+        loading.baseContent = false
+      },()=>{
+        ElMessage.error('用户信息保存失败')
+        loading.base = false
+        loading.baseContent = false
+      })
+    }
+    else {
+      ElMessage.error('请按规则填入信息！')
+    }
+  })
+}
+get('api/user/details',(data)=>{
+  console.log(data)
+  baseForm.username = store.user.username
+  // baseForm.username = data.username
+  baseForm.gender = data.gender
+  baseForm.phone = data.phone
+  baseForm.qq = data.qq
+  baseForm.wx = data.wx
+  baseForm.desc = desc.value = data.desc
+  loading.form = false
 })
 </script>
 
 <template>
   <div style="display: flex;">
     <div class="settings-left">
-      <Card :icon="User" title="账号信息设置" desc="编辑您的个人信息，您可以在隐私设置中选择是否展示某些信息">
-        <el-form label-position="top" style="margin: 0 10px 10px 10px">
-          <el-form-item label="用户名">
-            <el-input></el-input>
+      <Card :icon="User" title="账号信息设置" desc="编辑您的个人信息，您可以在隐私设置中选择是否展示某些信息" v-loading="loading.baseContent || loading.form" element-loading-text="正在处理，请稍后">
+        <el-form  :model="baseForm" :rules="rules" ref="baseFormRef" label-position="top" style="margin: 0 10px 10px 10px">
+          <el-form-item label="用户名" prop="username">
+            <el-input v-model="baseForm.username" maxlength="10"></el-input>
           </el-form-item>
-          <el-form-item label="性别">
-            <el-radio-group>
-              <el-radio label="1">男</el-radio>
-              <el-radio label="2">女</el-radio>
+          <el-form-item label="性别" prop="gender">
+            <el-radio-group v-model="baseForm.gender">
+              <el-radio :label="0">男</el-radio>
+              <el-radio :label="1">女</el-radio>
             </el-radio-group>
           </el-form-item>
-          <el-form-item label="手机号">
-            <el-input></el-input>
+          <el-form-item label="手机号"  prop="phone">
+            <el-input v-model="baseForm.phone" maxlength="11"></el-input>
           </el-form-item>
-          <el-form-item label="QQ">
-            <el-input></el-input>
+          <el-form-item label="QQ" prop="qq">
+            <el-input v-model="baseForm.qq" maxlength="13"></el-input>
           </el-form-item>
-          <el-form-item label="微信">
-            <el-input></el-input>
+          <el-form-item label="微信" prop="wx">
+            <el-input v-model="baseForm.wx" maxlength="20"></el-input>
           </el-form-item>
-          <el-form-item label="个人简介">
-            <el-input type="textarea" :rows="6"></el-input>
+          <el-form-item label="个人简介" prop="desc">
+            <el-input v-model="baseForm.desc" type="textarea" maxlength="200" :rows="6"></el-input>
           </el-form-item>
           <div>
-            <el-button type="success" :icon="Select">保存用户信息</el-button>
+            <el-button type="success" @click="saveDetails" :icon="Select" :loading="loading.base">保存用户信息</el-button>
           </div>
         </el-form>
       </Card>
       <Card style="margin-top: 20px" :icon="Message" title="email设置" desc="在这里修改您的电子邮件地址">
-        <el-form label-position="top" style="margin: 0 10px 10px 10px">
-          <el-form-item label="电子邮件">
-            <el-input></el-input>
+        <el-form :model="emailForm"  :rules="rules" ref="emailFormRef" label-position="top" style="margin: 0 10px 10px 10px">
+          <el-form-item label="电子邮件" prop="email">
+            <el-input v-model="emailForm.email"></el-input>
           </el-form-item>
-          <el-form-item>
+          <el-form-item prop="code">
             <el-row style="width: 100%;" :gutter="10">
               <el-col :span="18">
-                <el-input placeholder="请获取验证码"></el-input>
+                <el-input v-model="emailForm.code" placeholder="请获取验证码"></el-input>
               </el-col>
               <el-col :span="6">
                 <el-button type="success" plain style="width: 100%;">获取验证码</el-button>
@@ -78,9 +167,7 @@ const TodayBetweenRegister = computed(() => {
             </div>
             <el-divider style="margin: 10px 0;" />
             <div style="color: gray;padding: 10px; font-size: 14px;">
-              Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quia corporis autem natus quaerat! A officiis,
-              temporibus vero quasi accusantium voluptas voluptatum tempora inventore, nulla dolor aliquam nostrum modi
-              culpa adipisci.
+              {{desc || '这个人很懒，什么也没有留下' }}
             </div>
           </div>
         </Card>

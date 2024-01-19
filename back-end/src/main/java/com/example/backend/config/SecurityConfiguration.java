@@ -19,7 +19,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -108,7 +107,7 @@ public class SecurityConfiguration {
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
         response.setContentType("application/json;charset=utf-8");
         log.info("登录失败:" + exception.getMessage());
-        response.getWriter().write(RestBean.failure(401,exception.getMessage()).asJsonString());
+        response.getWriter().write(RestBean.failure(401,"您的登录信息有误。").asJsonString());
     }
     public void onUnAuthorized(HttpServletRequest request, HttpServletResponse  response, AuthenticationException exception) throws IOException {
         response.setContentType("application/json;charset=utf-8");

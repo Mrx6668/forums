@@ -1,6 +1,7 @@
 package com.example.backend.entity.dto;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
@@ -14,6 +15,7 @@ import java.util.Date;
 public class Account {
     @TableId(type = IdType.AUTO)
     Integer id;
+    @TableField("username")
     String username;
     String password;
     String email;
