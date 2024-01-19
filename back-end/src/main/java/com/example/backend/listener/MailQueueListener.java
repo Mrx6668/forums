@@ -26,6 +26,7 @@ public class MailQueueListener {
         SimpleMailMessage message = switch (type){
             case "register" -> createMessage("欢迎来到我们的网站","注册验证码:"+code+", 请在3分钟之内完成验证",email);
             case "reset" -> createMessage("网站密码重置","重置密码验证码:"+code+"， 您正在进行重置密码操作，请在3分钟之内完成验证，请确保是您本人操作",email);
+            case "modify" -> createMessage("您正在绑定新的论坛邮箱","验证码:"+code+",有效时间为3分钟，请妥善保管。",email);
             default -> null;
         };
         if (message == null) return;

@@ -2,9 +2,11 @@ package com.example.backend.controller;
 
 import com.example.backend.entity.RestBean;
 import com.example.backend.entity.vo.request.ConfirmResetVO;
+import com.example.backend.entity.vo.request.EmailModifyVO;
 import com.example.backend.entity.vo.request.EmailRegisterVO;
 import com.example.backend.entity.vo.request.EmailResetVO;
 import com.example.backend.service.AccountService;
+import com.example.backend.utils.Const;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Email;
@@ -21,9 +23,9 @@ public class AuthorizeController {
     @Resource
     private AccountService accountService;
 
-    @GetMapping("ask-code")
+    @GetMapping("/ask-code")
     public RestBean<Void> askCode(@RequestParam @Email String email,
-                                  @RequestParam @Pattern(regexp = "register|reset") String type,
+                                  @RequestParam @Pattern(regexp = "register|reset|modify") String type,
                                   HttpServletRequest request) {
 //        String message = accountService.registerEmailVerifyCode(type,email,request.getRemoteAddr());
 //        if (message == null)
@@ -53,6 +55,8 @@ public class AuthorizeController {
                 accountService.resetEmailAccountPassword(vo)
         );
     }
+
+
 
     private RestBean<Void> messageHandle(Supplier<String> action) {
         String message = action.get();

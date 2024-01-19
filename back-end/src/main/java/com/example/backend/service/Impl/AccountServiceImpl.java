@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.backend.entity.dto.Account;
 import com.example.backend.entity.vo.request.ConfirmResetVO;
+import com.example.backend.entity.vo.request.EmailModifyVO;
 import com.example.backend.entity.vo.request.EmailRegisterVO;
 import com.example.backend.entity.vo.request.EmailResetVO;
 import com.example.backend.mapper.AccountMapper;
@@ -146,5 +147,24 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
     public Account findAccountById(int userId) {
 
         return this.getById(userId);
+    }
+
+    @Override
+    public String modifyEmail(int id, EmailModifyVO vo) {
+        String code = stringRedisTemplate.opsForValue().get(Const.VERIFY_EMAIL_DATA + vo.getEmail());
+        if (code == null) return "请先获取验证码";
+        if (!code.equals(vo.getCode())) return "验证码错误，请重新输入";
+        stringRedisTemplate.delete(Const.VERIFY_EMAIL_DATA + vo.getEmail());
+        //查找电子邮件是否被占用
+        Account account = this.findAccountByIdOrEmail(vo.getEmail());
+        if (account != null) {
+            if (account.getId() == id) return "您已经绑定此邮箱！";
+            return "此邮箱已绑定账号，请更换后再试！";
+        }
+        boolean update = this.lambdaUpdate()
+                .set(Account::getEmail, vo.getEmail())
+                .eq(Account::getId, id)
+                .update();
+        return null;
     }
 }

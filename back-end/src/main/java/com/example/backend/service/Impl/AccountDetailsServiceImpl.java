@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.backend.entity.dto.Account;
 import com.example.backend.entity.dto.AccountDetails;
 import com.example.backend.entity.vo.request.DetailsSaveVO;
+import com.example.backend.entity.vo.request.EmailModifyVO;
 import com.example.backend.mapper.AccountDetailsMapper;
 import com.example.backend.service.AccountDetailsService;
 import com.example.backend.service.AccountService;
@@ -38,4 +39,6 @@ public class AccountDetailsServiceImpl extends ServiceImpl<AccountDetailsMapper,
         }
         return false;
     }
+
+
 }
