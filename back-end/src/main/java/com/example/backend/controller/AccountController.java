@@ -5,6 +5,7 @@ import com.example.backend.entity.dto.Account;
 import com.example.backend.entity.dto.AccountDetails;
 import com.example.backend.entity.vo.request.DetailsSaveVO;
 import com.example.backend.entity.vo.request.EmailModifyVO;
+import com.example.backend.entity.vo.request.PwdChangeVO;
 import com.example.backend.entity.vo.respones.AccountDetailsVO;
 import com.example.backend.entity.vo.respones.AccountVO;
 import com.example.backend.service.AccountDetailsService;
@@ -50,8 +51,15 @@ public class AccountController {
 
     @PostMapping("/modify-email")
     public RestBean<Void> modifyEmail(@RequestAttribute(Const.ATTR_USER_ID) int userId,
-                                      @RequestBody @Validated EmailModifyVO vo){
+                                      @RequestBody @Validated EmailModifyVO vo) {
         String result = accountService.modifyEmail(userId, vo);
-        return result == null ? RestBean.success() : RestBean.failure(400,result);
+        return result == null ? RestBean.success() : RestBean.failure(400, result);
+    }
+
+    @PostMapping("/change-password")
+    public RestBean<Void> changePassword(@RequestAttribute(Const.ATTR_USER_ID) int userId,
+                                         @RequestBody @Valid PwdChangeVO vo) {
+        boolean result = accountService.changePassword(userId,vo);
+        return result ? RestBean.success() : RestBean.failure(400,"重置密码失败！请检查原始密码是否正确");
     }
 }

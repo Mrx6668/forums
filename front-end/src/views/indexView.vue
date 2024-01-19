@@ -36,6 +36,7 @@ function userLogout() {
     router.push('/')
   });
 }
+
 </script>
 
 <template>
@@ -177,7 +178,7 @@ function userLogout() {
                     个人信息设置
                   </template>
                 </el-menu-item>
-                <el-menu-item index="3-1">
+                <el-menu-item index="/index/privacy-setting">
                   <template #title>
                     <el-icon><Lock /></el-icon>
                     账号安全设置

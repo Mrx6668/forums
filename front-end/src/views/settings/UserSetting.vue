@@ -155,7 +155,7 @@ function submitCode(){
 </script>
 
 <template>
-  <div style="display: flex;">
+  <div style="display: flex;max-width: 1000px;margin: 0 auto">
     <div class="settings-left">
       <Card :icon="User" title="账号信息设置" desc="编辑您的个人信息，您可以在隐私设置中选择是否展示某些信息" v-loading="loading.baseContent || loading.form" element-loading-text="正在处理，请稍后">
         <el-form  :model="baseForm" :rules="rules" ref="baseFormRef" label-position="top" style="margin: 0 10px 10px 10px">

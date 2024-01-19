@@ -2,10 +2,7 @@ package com.example.backend.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.backend.entity.dto.Account;
-import com.example.backend.entity.vo.request.ConfirmResetVO;
-import com.example.backend.entity.vo.request.EmailModifyVO;
-import com.example.backend.entity.vo.request.EmailRegisterVO;
-import com.example.backend.entity.vo.request.EmailResetVO;
+import com.example.backend.entity.vo.request.*;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface AccountService extends IService<Account> , UserDetailsService {
@@ -25,4 +22,5 @@ Spring Security会取出用户提交的密码和UserDetailsService加载出来�
     String resetEmailAccountPassword(EmailResetVO resetVO);
     Account findAccountById(int userId);
     String modifyEmail(int id, EmailModifyVO vo);
+    boolean changePassword(int userId, PwdChangeVO vo);
 }

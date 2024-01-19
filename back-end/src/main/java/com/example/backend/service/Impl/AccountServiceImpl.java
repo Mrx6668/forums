@@ -3,10 +3,7 @@ package com.example.backend.service.Impl;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.backend.entity.dto.Account;
-import com.example.backend.entity.vo.request.ConfirmResetVO;
-import com.example.backend.entity.vo.request.EmailModifyVO;
-import com.example.backend.entity.vo.request.EmailRegisterVO;
-import com.example.backend.entity.vo.request.EmailResetVO;
+import com.example.backend.entity.vo.request.*;
 import com.example.backend.mapper.AccountMapper;
 import com.example.backend.service.AccountService;
 import com.example.backend.utils.Const;
@@ -166,5 +163,16 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
                 .eq(Account::getId, id)
                 .update();
         return null;
+    }
+
+    @Override
+    public boolean changePassword(int userId, PwdChangeVO vo) {
+        Account account = this.getById(userId);
+        String oldPwd = account.getPassword();
+        if (!passwordEncoder.matches(vo.getOldPassword(), oldPwd)) return false;
+        return this.lambdaUpdate()
+                .set(Account::getPassword,passwordEncoder.encode(vo.getNewPassword()))
+                .eq(Account::getId,userId)
+                .update();
     }
 }
