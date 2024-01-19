@@ -23,4 +23,6 @@ Spring Security会取出用户提交的密码和UserDetailsService加载出来�
     Account findAccountById(int userId);
     String modifyEmail(int id, EmailModifyVO vo);
     boolean changePassword(int userId, PwdChangeVO vo);
+
+
 }

@@ -158,7 +158,7 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
             if (account.getId() == id) return "您已经绑定此邮箱！";
             return "此邮箱已绑定账号，请更换后再试！";
         }
-        boolean update = this.lambdaUpdate()
+        this.lambdaUpdate()
                 .set(Account::getEmail, vo.getEmail())
                 .eq(Account::getId, id)
                 .update();
@@ -175,4 +175,6 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
                 .eq(Account::getId,userId)
                 .update();
     }
+
+
 }

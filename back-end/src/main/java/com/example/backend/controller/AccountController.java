@@ -3,12 +3,15 @@ package com.example.backend.controller;
 import com.example.backend.entity.RestBean;
 import com.example.backend.entity.dto.Account;
 import com.example.backend.entity.dto.AccountDetails;
+import com.example.backend.entity.dto.AccountPrivacy;
 import com.example.backend.entity.vo.request.DetailsSaveVO;
 import com.example.backend.entity.vo.request.EmailModifyVO;
+import com.example.backend.entity.vo.request.PrivacySaveVO;
 import com.example.backend.entity.vo.request.PwdChangeVO;
 import com.example.backend.entity.vo.respones.AccountDetailsVO;
 import com.example.backend.entity.vo.respones.AccountVO;
 import com.example.backend.service.AccountDetailsService;
+import com.example.backend.service.AccountPrivacyService;
 import com.example.backend.service.AccountService;
 import com.example.backend.utils.BeanUtils;
 import com.example.backend.utils.Const;
@@ -26,6 +29,8 @@ public class AccountController {
     AccountService accountService;
     @Resource
     AccountDetailsService accountDetailsService;
+    @Resource
+    AccountPrivacyService accountPrivacyService;
 
     @GetMapping("/info")
     public RestBean<AccountVO> getInfo(@RequestAttribute(Const.ATTR_USER_ID) int userId) {
@@ -62,4 +67,18 @@ public class AccountController {
         boolean result = accountService.changePassword(userId,vo);
         return result ? RestBean.success() : RestBean.failure(400,"重置密码失败！请检查原始密码是否正确");
     }
+
+    @PostMapping("/save-privacies")
+    public RestBean<Void> savePrivacies(@RequestAttribute(Const.ATTR_USER_ID) int userId,
+                                      @RequestBody @Valid PrivacySaveVO vo){
+        boolean result = accountPrivacyService.savePrivacies(userId,vo);
+        return result ? RestBean.success() : RestBean.failure(400,"隐私状态修改失败，请联系管理员");
+    }
+
+    @GetMapping("/get-privacies")
+    public RestBean<AccountPrivacy> getPrivacies(@RequestAttribute(Const.ATTR_USER_ID) int userId){
+        AccountPrivacy accountPrivacy = accountPrivacyService.getPrivacies(userId);
+        return RestBean.success(accountPrivacy);
+    }
+
 }

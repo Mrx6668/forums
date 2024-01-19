@@ -1,11 +1,10 @@
 <script setup>
 
 import Card from "@/components/Card.vue";
-import {EditPen, Lock, Setting, Switch} from "@element-plus/icons-vue";
-import {reactive,ref} from "vue";
+import {EditPen, Hide, Lock, Setting, Switch} from "@element-plus/icons-vue";
+import {reactive,ref,watch} from "vue";
 import {ElMessage} from "element-plus";
-import {logout, post} from "@/net";
-import userLogout from "../indexView.vue"
+import {logout, post,get} from "@/net";
 import router from "@/router";
 
 const password = reactive({
@@ -59,20 +58,73 @@ function changePassword(){
       })
     }
   })
-
 }
+
+const privacyLoading = ref(true)
+const privacy = reactive({
+  phone:true,
+  wx:true,
+  qq:true,
+  email:true,
+  gender:true
+})
+
+get('/api/user/get-privacies', (data) => {
+  privacy.phone = data.phone
+  privacy.wx = data.wx
+  privacy.qq = data.qq
+  privacy.email = data.email
+  privacy.gender = data.gender
+  privacyLoading.value = false
+})
+
+function savePrivacy() {
+  privacyLoading.value = true
+  post('api/user/save-privacies',privacy,()=>{
+    ElMessage.success('隐私设置修改成功')
+    privacyLoading.value = false
+  })
+}
+const selectAll = ref(false)
+function changeSelect() {
+  for (const key in privacy) {
+    privacy[key] = selectAll.value
+  }
+}
+
+/**
+ * watch函数用于监视privacy对象的所有属性。当任何一个属性的值改变时，watch函数会重新运行。
+ * 在这个函数中，我们使用Object.values(privacy)来获取privacy对象的所有值，
+ * 然后使用every函数来检查所有的值是否都为true。如果是，那么selectAll的值会被设置为true；
+ * 否则，selectAll的值会被设置为false。这样，无论何时复选框的状态改变，selectAll的值都会立即更新，
+ *
+ * every方法会测试数组中的所有元素是否都满足提供的函数。如果所有元素都满足条件，那么every方法返回true；否则，返回false。
+ * 在这段代码中，newValues.every(value => value)会检查newValues数组中的所有值是否都为true。这个函数value => value是一个箭头函数，它接受一个参数value，并直接返回这个参数。因此，这个箭头函数实际上就是检查value是否为true。
+ * 如果newValues数组中的所有值都为true，那么newValues.every(value => value)的结果就是true，否则，结果就是false。这个结果然后被赋值给selectAll.value。
+ * 总的来说，这段代码的作用是：如果newValues数组中的所有值都为true，那么selectAll.value就被设置为true；否则，就被设置为false。
+ */
+watch(() => Object.values(privacy), (newValues) => {
+  selectAll.value = newValues.every(value => value)
+}, { immediate: true })
+
 </script>
 
 <template>
 <div style="margin: auto;max-width: 600px">
   <div style="margin-top: 20px">
-    <Card :icon="Setting" title="隐私设置" desc="修改您的隐私设置">
-      <div class="checkbox-list" style="display: flex;flex-direction: column;gap: 5px; padding: 0 15px 0 15px">
-        <el-checkbox>公开展示手机号</el-checkbox>
-        <el-checkbox>公开展示性别</el-checkbox>
-        <el-checkbox>公开展示电子邮件</el-checkbox>
-        <el-checkbox>公开展示微信</el-checkbox>
-        <el-checkbox>公开展示QQ</el-checkbox>
+    <Card v-loading="privacyLoading" :icon="Setting" title="隐私设置" desc="修改您的隐私设置">
+      <el-switch v-model="selectAll" @click="changeSelect" style="display: flex;justify-content: flex-end;right: 20px" active-text="全选">
+
+      </el-switch>
+      <div  class="checkbox-list" style="display: flex;flex-direction: column;gap: 5px; padding: 0 15px 0 15px">
+        <el-checkbox v-model="privacy.phone">公开展示手机号</el-checkbox>
+        <el-checkbox v-model="privacy.gender">公开展示性别</el-checkbox>
+        <el-checkbox v-model="privacy.email">公开展示电子邮件</el-checkbox>
+        <el-checkbox v-model="privacy.wx">公开展示微信</el-checkbox>
+        <el-checkbox v-model="privacy.qq">公开展示QQ</el-checkbox>
+      </div>
+      <div style="text-align: center;">
+        <el-button type="primary"  plain @click="savePrivacy" :icon="Hide" round style="width: 30%;min-width: 100px">保存</el-button>
       </div>
     </Card>
     <Card :icon="Setting" style="margin-top: 20px" title="修改密码" desc="在这里修改密码，请牢记您的密码" >

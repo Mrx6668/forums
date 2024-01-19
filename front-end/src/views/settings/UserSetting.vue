@@ -133,6 +133,15 @@ function sendModifyEmail(){
     }
   })
 }
+
+const privacy = reactive({
+  phone:false,
+  wx:false,
+  qq:false,
+  email:false,
+  gender:false
+})
+
 function submitCode(){
   //校验电子邮件
   emailFormRef.value.validateField('email',(isValid)=>{
