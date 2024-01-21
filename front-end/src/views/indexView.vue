@@ -15,7 +15,6 @@ import {
   Position,
   School, Search, User
 } from "@element-plus/icons-vue";
-import routes from "@/router";
 
 const store = useStore()
 const loading = ref(true)//加载效果
@@ -66,7 +65,7 @@ function userLogout() {
             <div>{{store.user.email}}</div>
           </div>
           <el-dropdown size="large">
-            <el-avatar  src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"/>
+            <el-avatar  :src="store.avatarUrl"/>
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item>

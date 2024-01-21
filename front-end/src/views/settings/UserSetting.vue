@@ -6,8 +6,9 @@ import {ref} from "vue";
 import { Message } from "@element-plus/icons-vue";
 import { useStore } from "@/store";
 import { computed, reactive } from "vue";
-import {get, post} from "@/net";
+import {accessHeader, get, post} from "@/net";
 import {ElMessage} from "element-plus";
+import axios from "axios";
 
 
 const store = useStore()
@@ -161,12 +162,37 @@ function submitCode(){
   })
 
 }
+
+function beforeAvatarUpload(rawFile){
+  if(rawFile.type !== 'image/jpeg' && rawFile.type !== 'image/png'){
+    ElMessage.info("请上传jpg或者png格式的图片")
+    return false
+  }
+  if (rawFile.size / 1024 / 1024 > 1.5){
+    ElMessage.info("图片大小不能超过1.5MB")
+    return false
+  }
+  return true
+}
+function AvatarUploadSuccess(response,file){
+  ElMessage.success('头像上传成功')
+  console.log("response: "+response)
+  // store.user.avatar = response.data
+  store.$patch({
+    user: {
+      avatar: response.data
+    }
+  })
+  console.log("avatar:"+store.user.avatar)
+  console.log("file:"+file)
+}
+
 </script>
 
 <template>
   <div style="display: flex;max-width: 1000px;margin: 0 auto">
     <div class="settings-left">
-      <Card :icon="User" title="账号信息设置" desc="编辑您的个人信息，您可以在隐私设置中选择是否展示某些信息" v-loading="loading.baseContent || loading.form" element-loading-text="正在处理，请稍后">
+      <Card :icon="User" title="设置" desc="编辑您的个人信息，您可以在隐私设置中选择是否展示某些信息" v-loading="loading.baseContent || loading.form" element-loading-text="正在处理，请稍后">
         <el-form  :model="baseForm" :rules="rules" ref="baseFormRef" label-position="top" style="margin: 0 10px 10px 10px">
           <el-form-item label="用户名" prop="username">
             <el-input v-model="baseForm.username" maxlength="10"></el-input>
@@ -221,7 +247,17 @@ function submitCode(){
       <div style="position: sticky;top: 20px;">
         <Card>
           <div style="text-align: center; padding: 5px 15px 0 15px;">
-            <el-avatar :size="70" src="https://i0.imgs.ovh/2023/12/10/fzBHK.md.jpeg"></el-avatar>
+            <el-avatar :size="70" :src="store.avatarUrl"></el-avatar>
+            <div style="margin: 5px 0">
+              <el-upload :action="axios.defaults.baseURL + '/api/image/avatar'"
+                         :show-file-list="false"
+                         :before-upload="beforeAvatarUpload"
+                         :on-success="AvatarUploadSuccess"
+                         :headers="accessHeader()"
+              >
+                <el-button type="primary" size="small" round plain>修改头像</el-button>
+              </el-upload>
+            </div>
             <div style="font-weight: bold;font-size: large;margin-top: 10px;">
               你好,{{ store.user.username }}
             </div>

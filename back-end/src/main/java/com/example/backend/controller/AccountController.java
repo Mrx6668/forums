@@ -81,4 +81,6 @@ public class AccountController {
         return RestBean.success(accountPrivacy);
     }
 
+
+
 }

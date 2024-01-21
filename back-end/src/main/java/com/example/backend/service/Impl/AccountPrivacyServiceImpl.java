@@ -1,10 +1,11 @@
-package com.example.backend.service;
+package com.example.backend.service.Impl;
 
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.backend.entity.dto.AccountPrivacy;
 import com.example.backend.entity.vo.request.PrivacySaveVO;
 import com.example.backend.mapper.AccountPrivacyMapper;
+import com.example.backend.service.AccountPrivacyService;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;

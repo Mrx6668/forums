@@ -30,3 +30,7 @@ spring:
       password: 123456
 server:
   port: 8080
+minio:
+  username: minio
+  password: 1.14159666
+  url: http://1.94.60.217:9000

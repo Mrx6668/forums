@@ -20,5 +20,6 @@ public class Account {
     String password;
     String email;
     String role;
+    String avatar;
     Date registerTime;
 }

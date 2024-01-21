@@ -38,16 +38,20 @@ public class SecurityConfiguration {
     JwtAuthorizeFilter filter;
     @Resource
     AccountService accountService;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http.
                 // 授权HTTP请求
-                    authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> {
-                        authorizationManagerRequestMatcherRegistry
-                        // 对于路径为"/api/auth/**"的请求，允许所有人访问
-                        .requestMatchers("/api/auth/**","/error").permitAll()
-                        // 对于其他所有请求，需要进行身份验证
-                        .anyRequest().authenticated();
+                        authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> {
+                    authorizationManagerRequestMatcherRegistry
+                            .requestMatchers("/api/image/get").permitAll()
+//                            .requestMatchers( "/api/image/**/**").permitAll() // 放行获取图片的请求
+//                            .requestMatchers(HttpMethod.POST, "/api/image/avatar").authenticated() // 只有认证过的用户才能上传头像
+                            // 对于路径为"/api/auth/**"的请求，允许所有人访问
+                            .requestMatchers("/api/auth/**", "/error").permitAll()
+                            // 对于其他所有请求，需要进行身份验证
+                            .anyRequest().authenticated();
                 })
                 // 配置表单登录
                 .formLogin(httpSecurityFormLoginConfigurer -> {
@@ -66,7 +70,7 @@ public class SecurityConfiguration {
                     httpSecurityLogoutConfigurer.logoutSuccessHandler(this::onLogoutSuccess);
                 })
                 //  自定义异常处理
-                .exceptionHandling(conf ->{
+                .exceptionHandling(conf -> {
                     conf.authenticationEntryPoint(this::onUnAuthorized);
                     conf.accessDeniedHandler(this::onAccessDeny);
                 })
@@ -86,12 +90,11 @@ public class SecurityConfiguration {
     }
 
 
-
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         response.setContentType("application/json;charset=utf-8"); // 设置响应类型
         UserDetails user = (UserDetails) authentication.getPrincipal(); // 获取用户详情
         Account account = accountService.findAccountByIdOrEmail(user.getUsername());
-        String token = jwtUtils.creatJwt(user,account.getId(),account.getUsername()); // 创建JWT令牌
+        String token = jwtUtils.creatJwt(user, account.getId(), account.getUsername()); // 创建JWT令牌
         AuthorizeVO authorizeVO = new AuthorizeVO();
         BeanUtils.copyProperties(account, authorizeVO);
         authorizeVO.setExpire(jwtUtils.expireTime()); // 设置令牌过期时间
@@ -104,29 +107,33 @@ public class SecurityConfiguration {
         response.getWriter().write(RestBean.success(authorizeVO).asJsonString());
 //        response.getWriter().write(JSONObject.toJSONString(RestBean.success("登录成功")));
     }
-    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
+
+    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
         response.setContentType("application/json;charset=utf-8");
         log.info("登录失败:" + exception.getMessage());
-        response.getWriter().write(RestBean.failure(401,"您的登录信息有误。").asJsonString());
+        response.getWriter().write(RestBean.failure(401, "您的登录信息有误。").asJsonString());
     }
-    public void onUnAuthorized(HttpServletRequest request, HttpServletResponse  response, AuthenticationException exception) throws IOException {
+
+    public void onUnAuthorized(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
         response.setContentType("application/json;charset=utf-8");
-        response.getWriter().write(RestBean.failure(401,exception.getMessage()).asJsonString());
+        response.getWriter().write(RestBean.failure(401, exception.getMessage()).asJsonString());
     }
+
     private void onAccessDeny(HttpServletRequest request, HttpServletResponse response, AccessDeniedException e) throws IOException {
         response.setContentType("application/json;charset=utf-8");
-        response.getWriter().write(RestBean.failure(403,e.getMessage()).asJsonString());
+        response.getWriter().write(RestBean.failure(403, e.getMessage()).asJsonString());
     }
-    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+
+    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         response.setContentType("application/json;charset=utf-8");
         //黑名单模式
         String auth = request.getHeader("Authorization");
-        if(jwtUtils.invalidateJwt(auth)){
+        if (jwtUtils.invalidateJwt(auth)) {
             log.info("退出成功！");
             response.getWriter().write(JSONObject.toJSONString(RestBean.success("退出成功")));
-        }else {
+        } else {
             log.info("退出失败！");
-            response.getWriter().write(JSONObject.toJSONString(RestBean.failure(400,"退出失败")));
+            response.getWriter().write(JSONObject.toJSONString(RestBean.failure(400, "退出失败")));
         }
 
     }
