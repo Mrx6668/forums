@@ -46,12 +46,13 @@ const routes = createRouter({
             path: '/index',
             name: 'index',
             // redirect: '/index/user-setting', // 重定向到
+            // component: () => import('../views/IndexView.vue'),
             component: () => import('../views/IndexView.vue'),
             children: [
                 {
-                  path: "post",
-                  name: "post",
-                  component:()=>import('../views/Post.vue')
+                  path: "posts",
+                  name: "posts",
+                  component:()=>import('../views/forum/Posts.vue')
                 },
                 {
                     path: "user-setting",

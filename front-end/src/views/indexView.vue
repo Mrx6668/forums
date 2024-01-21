@@ -98,7 +98,7 @@ function userLogout() {
                   <el-icon><Location/></el-icon>
                   <span><b>校园论坛</b></span>
                 </template>
-                <el-menu-item index="/index/post">
+                <el-menu-item index="/index/posts">
                   <template #title>
                     <el-icon><ChatDotSquare/></el-icon>
                     <b>帖子广场</b>

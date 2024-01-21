@@ -2,10 +2,12 @@
 defineProps(
     {
       icon: Object,
-      title:String,
-      desc:String
+      title: String,
+      desc: String,
+      hasBorder: Boolean
     }
 )
+
 </script>
 
 <template>
@@ -15,7 +17,7 @@ defineProps(
         <el-icon style="margin-right: 4px;transform: translate(0,2.5px);">
           <component :is="icon"/>
         </el-icon>
-        {{title}}
+        {{ title }}
       </div>
       <div class="card-content">
         {{ desc }}
@@ -39,8 +41,6 @@ defineProps(
   border-bottom: solid 1px var(--el-border-color);
   padding-bottom: 5px;
   margin-bottom: 10px;
-
-
 }
 
 .card-title {
