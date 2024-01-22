@@ -2,13 +2,13 @@
 
 import LightCard from "@/components/LightCard.vue";
 import {Calendar, CollectionTag, EditPen, Link} from "@element-plus/icons-vue";
-import Weather from "@/components/Weather.vue";
 import {computed,reactive} from "vue";
 import {get} from "@/net";
 import { ref, onMounted, onUnmounted } from 'vue';
 import axios from "axios";
 import {useStore} from "@/store";
 import {ElMessage} from "element-plus";
+import PostEditor from "@/components/PostEditor.vue";
 const store = useStore()
 
 let currentTime = ref(new Date().toLocaleString());
@@ -58,13 +58,16 @@ let imageLoaded = ref(false);
 const onImageLoad = () => {
   imageLoaded.value = true;
 };
+
+const editor = ref(false)
+
 </script>
 
 <template>
   <div style="display: flex;margin: 20px auto;gap: 30px;max-width: 1000px;">
     <div style="flex: 1;height: 2000px">
-      <LightCard>
-        <div class="create-post">
+      <LightCard >
+        <div class="create-post" @click="editor= true">
           <el-icon><EditPen/></el-icon>
           点击发布帖子
         </div>
@@ -132,6 +135,7 @@ const onImageLoad = () => {
         </div>
       </div>
     </div>
+    <PostEditor :show="editor" @close="editor = false"></PostEditor>
   </div>
 </template>
 
