@@ -92,6 +92,7 @@ function userLogout() {
                 router
                 :default-active="$route.path"
                 style="min-height: calc(100vh - 55px);"
+                :default-openeds="['1','3']"
             >
               <el-sub-menu index="1">
                 <template #title>

@@ -3,11 +3,12 @@
 import LightCard from "@/components/LightCard.vue";
 import {Calendar, CollectionTag, EditPen, Link} from "@element-plus/icons-vue";
 import Weather from "@/components/Weather.vue";
-import {computed} from "vue";
-
+import {computed,reactive} from "vue";
+import {get} from "@/net";
 import { ref, onMounted, onUnmounted } from 'vue';
 import axios from "axios";
 import {useStore} from "@/store";
+import {ElMessage} from "element-plus";
 const store = useStore()
 
 let currentTime = ref(new Date().toLocaleString());
@@ -27,18 +28,30 @@ onMounted(async () => {
   quote.value = response.data;
 });
 
-// let WeatherImg = ref('');
-//
-// onMounted(async () => {
-//   const response = await axios.get(`https://api.vvhan.com/api/ip?tip=Hello${store.user.username}%20欢迎来到论坛！`, { responseType: 'arraybuffer' });
-//   const base64 = btoa(
-//       new Uint8Array(response.data).reduce(
-//           (data, byte) => data + String.fromCharCode(byte),
-//           '',
-//       ),
-//   );
-//   WeatherImg.value = `data:${response.headers['content-type'].toLowerCase()};base64,${base64}`;
-// });
+const weather = reactive({
+  location:{},
+  now:{},
+  hourly:{},
+  success:false
+})
+navigator.geolocation.getCurrentPosition((position)=>{
+  const longitude = position.coords.longitude
+  const latitude = position.coords.latitude
+  get(`api/forum/weather?longitude=${longitude}&latitude=${latitude}`,(data)=>{
+    Object.assign(weather,data) //拷贝数据
+    weather.success = true
+  })
+},(error)=>{
+  ElMessage.error("无法获取您的位置")
+  console.log('位置信息错误：'+error)
+  get('api/forum/weather?longitude=116.40529&latitude=39.90499',(data)=>{
+    Object.assign(weather,data) //拷贝数据
+    weather.success = true
+  })
+},{
+  timeout:3000,
+  enableHighAccuracy:true
+})
 
 const WeatherImageUrl = computed(() => `https://api.vvhan.com/api/ip?tip=Hello  ${encodeURIComponent(store.user.username)}%20欢迎来到论坛！`);
 let imageLoaded = ref(false);
@@ -87,7 +100,7 @@ const onImageLoad = () => {
               天气信息
             </el-text>
             <el-divider style="margin: 8px 0"></el-divider>
-            <Weather/>
+            <Weather :data="weather"/>
             <div style="margin-top: 10px">
               <el-collapse-transition style="transition: 1s ease-in-out;">
                 <el-image  v-show="imageLoaded" @load="onImageLoad" :src="WeatherImageUrl"></el-image>
