@@ -11,7 +11,11 @@ public interface Const {
     String BUCKET = "forum";
     //    1.5 MB
     long MAX_AVATAR_SIZE = (long) (1.5 * 1024 * 1024);
+    int MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
     String UPLOAD_AVATAR_NAME = "/userAvatar/";
+    String UPLOAD_CACHE_NAME = "/cache/";
+
+    String FORUM_IMAGE_COUNTER = "forum:image:";
 
 }

@@ -104,7 +104,7 @@ const editor = ref(false)
             </el-text>
             <el-divider style="margin: 8px 0"></el-divider>
             <Weather :data="weather"/>
-            <div style="margin-top: 10px">
+            <div style="margin-top: 20px">
               <el-collapse-transition style="transition: 1s ease-in-out;">
                 <el-image  v-show="imageLoaded" @load="onImageLoad" :src="WeatherImageUrl"></el-image>
               </el-collapse-transition>

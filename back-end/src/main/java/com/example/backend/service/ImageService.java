@@ -7,4 +7,5 @@ public interface ImageService {
     String uploadAvatar(MultipartFile avatar, int userId);
 
     void getImage(HttpServletResponse response, String imageName);
+    String uploadImage(MultipartFile image,int userId,HttpServletResponse response);
 }

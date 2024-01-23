@@ -1,24 +1,99 @@
 <script setup>
 import {Check, Document} from "@element-plus/icons-vue";
 import {reactive} from "vue";
-import {QuillEditor} from "@vueup/vue-quill";
+import {Quill, QuillEditor} from "@vueup/vue-quill";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
+import ImageResize from "quill-image-resize-vue";
+import {ImageExtend,QuillWatch} from "quill-image-super-solution-module"
+import axios from "axios";
+import {accessHeader} from "@/net";
+import {ElMessage} from "element-plus";
 
 
+Quill.register("modules/ImageExtend", ImageExtend);
+Quill.register("modules/imageResize", ImageResize);
 defineProps({
   show: Boolean
 })
 const editor = reactive({
   type: null,
   title: '',
-  content: ''
+  content: '',
+  uploading: false
 })
 const types = [
   {id: 1, name: '日常闲聊', desc: '在这里分享你的个人日常'},
   {id: 2, name: '真诚交友', desc: '我想要交朋友'},
   {id: 3, name: '问题反馈', desc: '感觉哪里不满意？'},
 ]
+
 const emit = defineEmits(['close'])
+const editorPotion = {
+  modules:{
+    toolbar:{
+      container:[
+        [{ header: [1, 2, 3, 4, 5, 6] }], // 标题
+        [{ header: 1 }, { header: 2 }], // 1、2 级标题
+        [{ size: ['12', '14', '16', '18', '20', '22', '24', '28', '32', '36'] }], // 字体大小
+        [{ color: [] }, { background: [] }], // 字体颜色、字体背景颜色
+        ['blockquote', 'code-block'], // 引用  代码块
+        // [{ indent: '-1' }, { indent: '+1' }], // 缩进
+        // [{ direction: 'rtl' }], // 文本方向
+        ['bold', 'italic', 'underline', 'strike'], // 加粗 斜体 下划线 删除线
+        [{ list: 'ordered' }, { list: 'bullet' }], // 有序、无序列表
+        [{ script: 'sub' }, { script: 'super' }], // 上标/下标
+          // "link",
+        // [{ font: ['songti'] }], // 字体种类
+        [{ align: [] }], // 对齐方式
+        ['clean'], // 清除文本格式
+        ['image','link'] // 链接、图片、视频
+        // ['bold', 'italic', 'underline', 'strike'],
+      ],
+      handlers: {
+        'image' : function (){
+          QuillWatch.emit(this.quill.id)
+        }
+      }
+    },
+    imageResize: {
+      modules: ['Resize', 'DisplaySize']
+    },
+    ImageExtend: {
+      action:axios.defaults.baseURL + '/api/image/cache',
+      name:'file',
+      size:5,
+      loading:true,
+      accept:'image/*',
+      response:(resp)=>{
+        if (resp.data){
+          return axios.defaults.baseURL + '/api/image/get?imageName=' + resp.data
+        }else {
+          if (resp.data.code !== 200){
+            ElMessage.error(resp.data.message)
+          }
+          return null
+        }
+      },
+      methods:'POST',
+      headers: xhr =>{
+        xhr.setRequestHeader('Authorization',accessHeader().Authorization)
+      },
+      start:()=>editor.uploading = true,
+      success:()=>{
+        ElMessage.success("图片上传成功！")
+        editor.uploading = false
+      },
+      error:(data)=>{
+        ElMessage.error("操作过于频繁，图片上传失败，请稍后再试！")
+        editor.uploading = false
+      }
+    }
+  }
+}
+
+function submitPost() {
+  console.info("editor-content：",editor.content)
+}
 </script>
 
 <template>
@@ -44,13 +119,16 @@ const emit = defineEmits(['close'])
           <el-input v-model="editor.title" :prefix-icon="Document" placeholder="请输入帖子标题"></el-input>
         </div>
       </div>
-      <div style="margin-top: 20px;height: 80%;overflow: hidden">
-        <quill-editor style="height: calc(100% - 45px)" v-model:content="editor.content" placeholder="今天心情怎么样"/>
+      <div style="margin-top: 20px;height: 80%;overflow: hidden;border-radius: 5px"  v-loading="editor.uploading" element-loading-text="上传中，稍安勿躁">
+        <quill-editor style="height: calc(100% - 45px)" v-model:content="editor.content" placeholder="今天心情怎么样"
+                      content-type="delta"
+          :options="editorPotion"
+        />
       </div>
       <div style="display: flex;justify-content: space-between;margin-top: 5px">
         <el-text type="info" >当前字数200（最大支持20000字）</el-text>
         <div>
-          <el-button :icon="Check" type="primary">立即发布</el-button>
+          <el-button :icon="Check" @click="submitPost" type="primary">立即发布</el-button>
         </div>
       </div>
 

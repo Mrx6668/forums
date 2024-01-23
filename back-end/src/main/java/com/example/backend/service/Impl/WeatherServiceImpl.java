@@ -12,7 +12,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -31,11 +30,11 @@ public class WeatherServiceImpl implements WeatherService {
 
     @Override
     public WeatherVO fetchWeather(double longitude, double latitude) {
-        return fetchFromCache(longitude,latitude);
+        return fetchFromCache(longitude, latitude);
     }
 
     private WeatherVO fetchFromCache(double longitude, double latitude) {
-        log.info("fetchFromCache：longitude ：{}  ， latitude ： {} ",longitude,latitude);
+        log.info("fetchFromCache：longitude ：{}  ， latitude ： {} ", longitude, latitude);
         byte[] data = restTemplate.getForObject
                 ("https://geoapi.qweather.com/v2/city/lookup?location=" + longitude + "," + latitude + "&key=" + weatherKey, byte[].class);
         JSONObject geo = decompressStringToJson(data);

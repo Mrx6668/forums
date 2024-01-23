@@ -31,4 +31,15 @@ public class ImageController {
     public void getImage(HttpServletResponse response,@RequestParam String imageName){
         imageService.getImage(response,imageName);
     }
+
+    @PostMapping("/cache")
+    public RestBean<String> uploadImage(@RequestParam("file") MultipartFile image,
+                                        @RequestAttribute(Const.ATTR_USER_ID) int userId,
+                                        HttpServletResponse response){
+        if (image.getSize() > Const.MAX_IMAGE_SIZE)
+            return RestBean.failure(400,"图片不能大于5MB");
+        log.info("用户：{}  正在上传图片：{}", userId, image.getName());
+        String message = imageService.uploadImage(image, userId,response);
+        return message.startsWith("/") ? RestBean.success(message) : RestBean.failure(400, message);
+    }
 }

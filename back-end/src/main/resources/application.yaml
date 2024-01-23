@@ -36,3 +36,7 @@ minio:
   url: http://1.94.60.217:9000
 weather:
   key: d54232adea8849b6b3ab89fbb700e8e6
+FlowLimit:
+  limit: 30
+  period: 30
+  block: 20
