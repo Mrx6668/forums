@@ -57,7 +57,7 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
     public String createPost(int userId, PostCreateVO vo) {
         if (!contentLimitCheck(vo.getContent())) return "文章字数过多，请调整后再试！";
         if (!typeSet.contains(vo.getType())) return "对应分类非法，请不要恶意请求！";
-        String key = Const.FORUM_POST_CREATE_LIMIT;
+        String key = Const.FORUM_POST_CREATE_LIMIT + userId;
         if (!flowUtils.limitPeriodCounterCheck(key, 3, 1800)) return "发文过于频繁，请稍后再试！";
         Post post = new Post(null,userId, vo.getTitle(),vo.getContent().toJSONString(), vo.getType(), null);
         boolean save = this.save(post);

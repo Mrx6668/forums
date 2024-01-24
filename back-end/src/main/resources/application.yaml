@@ -1,4 +1,8 @@
 spring:
+  ai:
+    openai:
+      api-key: sk-vikoFmcgCvvYcWbLW8qhmC1QZB4cdIsopFO8CjCim7hWiSE7
+      base-url: https://api.chatanywhere.com.cn
   security:
     filter:
       order: -100
@@ -28,6 +32,7 @@ spring:
       database: 1
       port: 6379
       password: 123456
+
 server:
   port: 8080
 minio:

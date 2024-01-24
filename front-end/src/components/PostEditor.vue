@@ -1,5 +1,5 @@
 <script setup>
-import {Check, Document} from "@element-plus/icons-vue";
+import {Check, Document, EditPen} from "@element-plus/icons-vue";
 import {reactive,computed,ref} from "vue";
 import {Quill, QuillEditor} from "@vueup/vue-quill";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
@@ -8,6 +8,7 @@ import {ImageExtend,QuillWatch} from "quill-image-super-solution-module"
 import axios from "axios";
 import {accessHeader, get, post} from "@/net";
 import {ElMessage} from "element-plus";
+import ColorDot from "@/components/ColorDot.vue";
 
 
 Quill.register("modules/ImageExtend", ImageExtend);
@@ -105,7 +106,7 @@ function submitPost() {
     ElMessage.error("帖子标题不能为空！")
     return
   }
-  if (text > 20000){
+  if (text.length > 20000){
     ElMessage.error("帖子内容不能超过 20000 个字符！")
     return
   }
@@ -114,7 +115,7 @@ function submitPost() {
     return
   }
   post('api/forum/create-post',{
-    type: editor.type,
+    type: editor.type.id,
     title: editor.title,
     content: editor.content
   },()=>{
@@ -141,6 +142,23 @@ function initEditor(){
   editor.title = ''
   // editor.content = ''
 }
+const aiLoading = ref(false)
+function AIGenerateTitle(){
+  let content = deltaToText(editor.content)
+  if (content.length < 5 || content.length > 5000 ){
+    ElMessage.error ("使用该功能：帖子字数不能小于5 或 超过5000！")
+    return
+  }
+  aiLoading.value = true
+  post('/api/ai/title',{content:content},(data)=>{
+    ElMessage.success("AI 生成标题：" + data)
+    editor.title = data.replaceAll('"', "")
+    aiLoading.value = false
+  },()=>{
+    ElMessage.error("请求过于频繁，请稍后再试")
+    aiLoading.value = false
+  })
+}
 </script>
 
 <template>
@@ -158,18 +176,29 @@ function initEditor(){
       </template>
       <div style="display: flex;gap: 10px">
         <div style="width: 150px;">
-          <el-select v-model="editor.type" placeholder="请选择主题/类型" :disabled="!editor.types.length">
-            <el-option v-for="item in editor.types" :value="item.id" :label="item.title">
+          <el-select v-model="editor.type" value-key="id" placeholder="请选择主题/类型" :disabled="!editor.types.length">
+            <el-option v-for="item in editor.types" :value="item" :label="item.title">
+              <div>
+                <ColorDot :color="item.color"></ColorDot>
+                <span style="margin-left: 5px">{{item.title}}</span>
+              </div>
             </el-option>
           </el-select>
         </div>
         <div style="flex: 1">
           <el-input v-model="editor.title" :prefix-icon="Document" placeholder="请输入帖子标题"
-            maxlength="50" minlength="1"
+            v-loading="aiLoading" element-loading-text="loading..." maxlength="50" minlength="1"
           ></el-input>
         </div>
       </div>
-      <div style="margin-top: 20px;height: 80%;overflow: hidden;border-radius: 5px"  v-loading="editor.uploading" element-loading-text="上传中，稍安勿躁">
+      <div style="margin-top: 10px;display: flex;justify-content: space-between">
+        <el-text :style="{color: editor.type ? editor.type.color : 'gray'}" type="info">
+          <ColorDot :color="editor.type ? editor.type.color : 'gray'"></ColorDot>
+          {{editor.type ? editor.type.desc : '请选择一个类别'}}
+        </el-text>
+        <el-button :loading="aiLoading" element-loading-text="正在生成" type="warning" :icon="EditPen" plain @click="AIGenerateTitle">AI总结-生成标题</el-button>
+      </div>
+      <div style="margin-top: 10px;height: 80%;overflow: hidden;border-radius: 5px"  v-loading="editor.uploading" element-loading-text="上传中，稍安勿躁">
         <quill-editor style="height: calc(100% - 45px)" v-model:content="editor.content" placeholder="今天心情怎么样"
                       content-type="delta" ref="refEditor"
           :options="editorPotion"

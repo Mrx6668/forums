@@ -14,4 +14,5 @@ public class PostDTO {
     String title;
     @TableField("`desc`")
     String desc;
+    String color;
 }
