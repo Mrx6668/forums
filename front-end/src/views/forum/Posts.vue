@@ -104,7 +104,8 @@ const editor = ref(false)
             </el-text>
             <el-divider style="margin: 8px 0"></el-divider>
             <Weather :data="weather"/>
-            <div style="margin-top: 20px">
+            <div style="margin-top: 25px;">
+<!--              <el-divider style="margin: 10px 0"></el-divider>-->
               <el-collapse-transition style="transition: 1s ease-in-out;">
                 <el-image  v-show="imageLoaded" @load="onImageLoad" :src="WeatherImageUrl"></el-image>
               </el-collapse-transition>
@@ -135,7 +136,7 @@ const editor = ref(false)
         </div>
       </div>
     </div>
-    <PostEditor :show="editor" @close="editor = false"></PostEditor>
+    <PostEditor :show="editor" @createSuccess="editor=false" @close="editor = false"></PostEditor>
   </div>
 </template>
 
@@ -154,5 +155,8 @@ const editor = ref(false)
   &:hover{
     cursor: pointer;
   }
+}
+.dark .create-post{
+  background-color: #303030;
 }
 </style>

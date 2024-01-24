@@ -1,12 +1,12 @@
 <script setup>
 import {Check, Document} from "@element-plus/icons-vue";
-import {reactive} from "vue";
+import {reactive,computed,ref} from "vue";
 import {Quill, QuillEditor} from "@vueup/vue-quill";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
 import ImageResize from "quill-image-resize-vue";
 import {ImageExtend,QuillWatch} from "quill-image-super-solution-module"
 import axios from "axios";
-import {accessHeader} from "@/net";
+import {accessHeader, get, post} from "@/net";
 import {ElMessage} from "element-plus";
 
 
@@ -19,15 +19,21 @@ const editor = reactive({
   type: null,
   title: '',
   content: '',
-  uploading: false
+  uploading: false,
+  types: [],
 })
-const types = [
-  {id: 1, name: '日常闲聊', desc: '在这里分享你的个人日常'},
-  {id: 2, name: '真诚交友', desc: '我想要交朋友'},
-  {id: 3, name: '问题反馈', desc: '感觉哪里不满意？'},
-]
+// const types = [
+//   {id: 1, name: '日常闲聊', desc: '在这里分享你的个人日常'},
+//   {id: 2, name: '真诚交友', desc: '我想要交朋友'},
+//   {id: 3, name: '问题反馈', desc: '感觉哪里不满意？'},
+// ]
+get('api/forum/types',(data)=>{
+  // console.log("types:",data)
+  // console.log("editor.types:",editor.types)
+  editor.types = data
+})
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close','createSuccess'])
 const editorPotion = {
   modules:{
     toolbar:{
@@ -92,13 +98,55 @@ const editorPotion = {
 }
 
 function submitPost() {
-  console.info("editor-content：",editor.content)
+  console.info("editor-content-delta：",editor.content)
+  console.info("editor-content-text：",deltaToText(editor.content))
+  const text = deltaToText(editor.content)
+  if (!editor.title) {
+    ElMessage.error("帖子标题不能为空！")
+    return
+  }
+  if (text > 20000){
+    ElMessage.error("帖子内容不能超过 20000 个字符！")
+    return
+  }
+  if (!editor.type){
+    ElMessage.error("帖子类型不能为空！")
+    return
+  }
+  post('api/forum/create-post',{
+    type: editor.type,
+    title: editor.title,
+    content: editor.content
+  },()=>{
+    ElMessage.success("发布成功！")
+    emit('createSuccess')
+  })
+}
+function deltaToText(delta){
+  if (!delta) return '';
+  let str = '';
+  delta.ops.forEach(op=>{
+    str += op.insert
+  })
+  // return str
+  return str.replace(/\s/g,"")
+}
+const contentLength = computed(()=>{
+  return deltaToText(editor.content).length
+})
+const refEditor = ref()
+function initEditor(){
+  refEditor.value.setContents('','user')
+  editor.type = null
+  editor.title = ''
+  // editor.content = ''
 }
 </script>
 
 <template>
   <div>
     <el-drawer
+        @open="initEditor"
         style="min-height: 600px" :model-value="show" size="70%" direction="btt"
         @close="emit('close')" :close-on-click-modal="false">
       <template #header>
@@ -110,25 +158,27 @@ function submitPost() {
       </template>
       <div style="display: flex;gap: 10px">
         <div style="width: 150px;">
-          <el-select v-model="editor.type" placeholder="请选择主题/类型">
-            <el-option v-for="item in types" :value="item.id" :label="item.name">
+          <el-select v-model="editor.type" placeholder="请选择主题/类型" :disabled="!editor.types.length">
+            <el-option v-for="item in editor.types" :value="item.id" :label="item.title">
             </el-option>
           </el-select>
         </div>
         <div style="flex: 1">
-          <el-input v-model="editor.title" :prefix-icon="Document" placeholder="请输入帖子标题"></el-input>
+          <el-input v-model="editor.title" :prefix-icon="Document" placeholder="请输入帖子标题"
+            maxlength="50" minlength="1"
+          ></el-input>
         </div>
       </div>
       <div style="margin-top: 20px;height: 80%;overflow: hidden;border-radius: 5px"  v-loading="editor.uploading" element-loading-text="上传中，稍安勿躁">
         <quill-editor style="height: calc(100% - 45px)" v-model:content="editor.content" placeholder="今天心情怎么样"
-                      content-type="delta"
+                      content-type="delta" ref="refEditor"
           :options="editorPotion"
         />
       </div>
       <div style="display: flex;justify-content: space-between;margin-top: 5px">
-        <el-text type="info" >当前字数200（最大支持20000字）</el-text>
+        <el-text type="info" >当前字数{{contentLength}}（最大支持20000字）</el-text>
         <div>
-          <el-button :icon="Check" @click="submitPost" type="primary">立即发布</el-button>
+          <el-button :icon="Check" @click="submitPost" plain type="primary">立即发布</el-button>
         </div>
       </div>
 

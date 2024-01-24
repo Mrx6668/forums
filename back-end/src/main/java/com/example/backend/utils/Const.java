@@ -17,5 +17,6 @@ public interface Const {
     String UPLOAD_CACHE_NAME = "/cache/";
 
     String FORUM_IMAGE_COUNTER = "forum:image:";
+    String FORUM_POST_CREATE_LIMIT = "forum:post:limit:";
 
 }
