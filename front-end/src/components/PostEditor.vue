@@ -10,7 +10,7 @@ import {accessHeader, get, post} from "@/net";
 import {ElMessage} from "element-plus";
 import ColorDot from "@/components/ColorDot.vue";
 
-
+// const postList = ref(null)
 Quill.register("modules/ImageExtend", ImageExtend);
 Quill.register("modules/imageResize", ImageResize);
 defineProps({
@@ -159,13 +159,14 @@ function AIGenerateTitle(){
     aiLoading.value = false
   })
 }
+
 </script>
 
 <template>
   <div>
     <el-drawer
         @open="initEditor"
-        style="min-height: 600px" :model-value="show" size="70%" direction="btt"
+        style="min-height: 600px" :model-value="show" size="75%" direction="btt"
         @close="emit('close')" :close-on-click-modal="false">
       <template #header>
         <div>

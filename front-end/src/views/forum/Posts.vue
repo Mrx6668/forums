@@ -60,6 +60,10 @@ const onImageLoad = () => {
 };
 
 const editor = ref(false)
+const postList = ref(null)
+get('/api/forum/list-post?page=0&type=0',(data)=>{
+  postList.value = data
+})
 
 </script>
 
@@ -76,8 +80,9 @@ const editor = ref(false)
         <LightCard style="height: 30px">
 
         </LightCard>
-        <LightCard style="height: 100px" v-for="item in 10">
-
+        <LightCard style="height: 100px" v-for="item in postList">
+          <div>{{item.title}}</div>
+          <div>{{item.content}}</div>
         </LightCard>
       </div>
     </div>

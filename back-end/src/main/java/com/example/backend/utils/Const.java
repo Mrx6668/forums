@@ -19,5 +19,6 @@ public interface Const {
     String FORUM_IMAGE_COUNTER = "forum:image:";
     String FORUM_POST_CREATE_LIMIT = "forum:post:limit:";
     String AI_TITLE_GENERATE_LIMIT = "forum:aiTitlePromote:";
+    String FORUM_POST_PREVIEW_CACHE = "forum:post:preview:";
 
 }
