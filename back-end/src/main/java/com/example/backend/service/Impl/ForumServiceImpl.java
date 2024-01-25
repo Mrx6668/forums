@@ -84,10 +84,11 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
     @Override
     public List<PostPreviewVO> listPost(int page, int type) {
         String key = Const.FORUM_POST_PREVIEW_CACHE + page + ":" + type;
-        //分类别 如果传入0 则不不限类别搜索
         List<Post> posts;
+        //从缓存中取
         List<PostPreviewVO> previewVOS = cacheUtils.takeListFromCache(key, PostPreviewVO.class);
         if (previewVOS != null) return previewVOS;
+        //分类别 如果传入0 则不不限类别从数据库查询
         if (type == 0)
             posts = postMapper.postList(page * 10);
         else
@@ -97,7 +98,7 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
         cacheUtils.saveListToCache(key, previewVOS, 30);
         return previewVOS;
     }
-
+    //解析帖子中content内容 分离image 减少预览的字数300字
     private PostPreviewVO resolvePostToPostView(Post post) {
         PostPreviewVO vo = new PostPreviewVO();
         vo = BeanUtils.copyBeans(post, PostPreviewVO.class);

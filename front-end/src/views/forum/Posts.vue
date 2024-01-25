@@ -1,7 +1,7 @@
 <script setup>
 
 import LightCard from "@/components/LightCard.vue";
-import {Calendar, CollectionTag, EditPen, Link} from "@element-plus/icons-vue";
+import {Calendar, Clock, CollectionTag, EditPen, Link} from "@element-plus/icons-vue";
 import {computed,reactive} from "vue";
 import {get} from "@/net";
 import { ref, onMounted, onUnmounted } from 'vue';
@@ -27,6 +27,12 @@ onMounted(async () => {
   const response = await axios.get('https://api.vvhan.com/api/ian');
   quote.value = response.data;
 });
+
+get('api/forum/types',(data)=>{
+  console.log("types:",data)
+  // console.log("editor.types:",editor.types)
+  store.forum.types = data
+})
 
 const weather = reactive({
   location:{},
@@ -61,10 +67,13 @@ const onImageLoad = () => {
 
 const editor = ref(false)
 const postList = ref(null)
-get('/api/forum/list-post?page=0&type=0',(data)=>{
-  postList.value = data
-})
-
+function updateList(){
+  get('/api/forum/list-post?page=0&type=0',(data)=>{
+    postList.value = data
+    // console.log("postList.value: "+data)
+  })
+}
+updateList()
 </script>
 
 <template>
@@ -76,13 +85,34 @@ get('/api/forum/list-post?page=0&type=0',(data)=>{
           点击发布帖子
         </div>
       </LightCard>
-      <div style="margin-top: 10px;display: flex;flex-direction: column;gap: 10px">
-        <LightCard style="height: 30px">
-
-        </LightCard>
-        <LightCard style="height: 100px" v-for="item in postList">
-          <div>{{item.title}}</div>
-          <div>{{item.content}}</div>
+      <div style="margin-top: 10px;display: flex;flex-direction: column;gap: 10px" v-if="store.forum.types">
+        <LightCard class="post-card" v-for="item in postList" >
+          <div style="display:flex;">
+            <div>
+              <el-avatar size="default" :src="`${axios.defaults.baseURL}/api/image/get?imageName=`+item.avatar"></el-avatar>
+            </div>
+            <div style="margin-left: 7px">
+              <el-text style="font-weight: bold;font-size: 13px;margin-bottom: 2px">{{item.username}}</el-text>
+<!--              <el-text  type="info"></el-text>-->
+              <div style="font-weight: bold;font-size: 12px;color: grey;margin-top: 2px">
+                <el-icon><Clock/></el-icon>
+                <div style="margin-left: 2px;display: inline-block;transform: translateY(-2px)">{{new Date(item.createTime).toLocaleString()}}</div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top: 5px">
+            <el-text class="post-type" :style="{
+              color:store.findTypeById(item.postType)?.color + 'EE',
+              'border-color' : store.findTypeById(item.postType)?.color + '77',
+              'background-color' : store.findTypeById(item.postType)?.color + '22'
+            }">{{store.findTypeById(item.postType).title}}</el-text>
+            <span style="font-weight: bold;margin-left: 7px;font-size: 16px">{{item.title}}</span>
+          </div>
+          <el-text class="post-content" type="info">{{item.content}}</el-text>
+<!--          <div class="post-content">{{item.content}}</div>-->
+          <div style="display: grid;grid-template-columns: repeat(3,1fr);grid-gap: 10px">
+            <el-image class="post-image" v-for="img in item?.images" :src="img" fit="cover"></el-image>
+          </div>
         </LightCard>
       </div>
     </div>
@@ -141,11 +171,43 @@ get('/api/forum/list-post?page=0&type=0',(data)=>{
         </div>
       </div>
     </div>
-    <PostEditor :show="editor" @createSuccess="editor=false" @close="editor = false"></PostEditor>
+    <PostEditor :show="editor" @createSuccess="editor=false;updateList()" @close="editor = false"></PostEditor>
   </div>
 </template>
 
 <style lang="less" scoped>
+.post-card{
+  padding: 15px;
+  transition: transform 0.3s linear;
+  &:hover{
+    transform: scale(1.03);
+    cursor: pointer;
+    transition: transform 0.3s linear;
+  }
+  .post-content{
+    font-size: 13px;
+    margin: 5px 0;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .post-type{
+    display: inline-block;
+    border: solid 0.1px grey;
+    border-radius: 5px;
+    font-size: 12px;
+    padding: 1px 5px;
+    vertical-align: middle; /* 垂直居中 */
+  }
+  .post-image{
+    width: 100%;
+    height: 100%;
+    border-radius: 5px;
+    max-height: 110px;
+  }
+}
 .info-text{
   display: flex;
   justify-content: space-between;
@@ -164,4 +226,5 @@ get('/api/forum/list-post?page=0&type=0',(data)=>{
 .dark .create-post{
   background-color: #303030;
 }
+
 </style>

@@ -8,7 +8,7 @@ import java.util.List;
 @Data
 public class PostPreviewVO {
     int id;
-    int type;
+    int PostType;
     String title;
     String content;
     List<String> images;

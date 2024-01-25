@@ -1,0 +1,46 @@
+spring:
+  ai:
+    openai:
+      api-key: sk-vikoFmcgCvvYcWbLW8qhmC1QZB4cdIsopFO8CjCim7hWiSE7
+      base-url: https://api.chatanywhere.com.cn
+  security:
+    filter:
+      order: -100
+  #    user:
+  #      name: root
+  #      password: root
+  jwt:
+    secret: This_Is_A_Secret
+    expire: 7
+  mail:
+    host: smtp.163.com
+    username: 18694214598@163.com
+    password: AWCWBARSESIIUUBL
+  rabbitmq:
+    addresses: localhost
+    username: admin
+    password: admin
+    virtual-host: /
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/forums?useUnicode=true&characterEncoding=utf8
+    username: root
+    password: root
+  data:
+    redis:
+      host: 127.0.0.1
+      database: 1
+      port: 6379
+      password: 123456
+server:
+  port: 8080
+minio:
+  username: minio
+  password: 1.14159666
+  url: http://1.94.60.217:9000
+weather:
+  key: d54232adea8849b6b3ab89fbb700e8e6
+FlowLimit:
+  limit: 30
+  period: 30
+  block: 20

@@ -9,7 +9,8 @@ import axios from "axios";
 import {accessHeader, get, post} from "@/net";
 import {ElMessage} from "element-plus";
 import ColorDot from "@/components/ColorDot.vue";
-
+import {useStore} from "@/store";
+const store = useStore()
 // const postList = ref(null)
 Quill.register("modules/ImageExtend", ImageExtend);
 Quill.register("modules/imageResize", ImageResize);
@@ -28,11 +29,7 @@ const editor = reactive({
 //   {id: 2, name: '真诚交友', desc: '我想要交朋友'},
 //   {id: 3, name: '问题反馈', desc: '感觉哪里不满意？'},
 // ]
-get('api/forum/types',(data)=>{
-  // console.log("types:",data)
-  // console.log("editor.types:",editor.types)
-  editor.types = data
-})
+
 
 const emit = defineEmits(['close','createSuccess'])
 const editorPotion = {
@@ -177,8 +174,8 @@ function AIGenerateTitle(){
       </template>
       <div style="display: flex;gap: 10px">
         <div style="width: 150px;">
-          <el-select v-model="editor.type" value-key="id" placeholder="请选择主题/类型" :disabled="!editor.types.length">
-            <el-option v-for="item in editor.types" :value="item" :label="item.title">
+          <el-select v-model="editor.type" value-key="id" placeholder="请选择主题/类型" :disabled="!store.forum.types.length">
+            <el-option v-for="item in store.forum.types" :value="item" :label="item.title">
               <div>
                 <ColorDot :color="item.color"></ColorDot>
                 <span style="margin-left: 5px">{{item.title}}</span>
