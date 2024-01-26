@@ -22,12 +22,17 @@ import {ElMessage} from "element-plus";
 import PostEditor from "@/components/PostEditor.vue";
 import ColorDot from "@/components/ColorDot.vue";
 import router from "@/router";
+import {useRoute} from "vue-router";
+import PostType from "@/components/PostType.vue";
 const store = useStore()
 const type = ref(0)
 const postList = ref([])
 const page = ref(0)
 const end = ref(false)
 const top = ref([])
+const route = useRoute();
+// const pid = route.params.pid
+// const detail = ref({})
 watch(type,()=>{
   resetList()
 })
@@ -103,6 +108,7 @@ const onImageLoad = () => {
 const editor = ref(false)
 
 function updateList(){
+  if (route.name !== 'posts') return
   if (end.value) return
   get(`/api/forum/list-post?page=${page.value}&type=${type.value}`,(data)=>{
     if(data){
@@ -147,11 +153,11 @@ updateList()
           <span>{{item.title}}</span>
         </div>
       </LightCard>
-      <LightCard style="margin-top: 10px;display: flex;flex-direction: column;gap: 10px">
-        <div v-for="item in top" class="top-post" style="">
+      <LightCard   style="margin-top: 10px;display: flex;flex-direction: column;gap: 10px">
+        <div @click="router.push('/index/post-detail/'+item.id)" v-for="item in top" class="top-post" style="">
           <el-tag type="info">置顶</el-tag>
           <div class="top-post-title" style="">{{item.title}}</div>
-          <div>{{new Date(item.createTime).toLocaleDateString()}}</div>
+          <div style="margin: auto 0">{{new Date(item.createTime).toLocaleDateString()}}</div>
         </div>
       </LightCard>
       <transition name="el-fade-in" mode="out-in">
@@ -172,11 +178,7 @@ updateList()
                 </div>
               </div>
               <div style="margin-top: 5px">
-                <el-text class="post-type" :style="{
-              color:store.findTypeById(item.postType)?.color + 'EE',
-              'border-color' : store.findTypeById(item.postType)?.color + '77',
-              'background-color' : store.findTypeById(item.postType)?.color + '22'
-            }">{{store.findTypeById(item.postType).title}}</el-text>
+                <PostType :type="item.postType"/>
                 <span style="font-weight: bold;margin-left: 7px;font-size: 16px">{{item.title}}</span>
               </div>
               <el-text class="post-content" type="info">{{item.content}}</el-text>
@@ -306,14 +308,7 @@ updateList()
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .post-type{
-    display: inline-block;
-    border: solid 0.1px grey;
-    border-radius: 5px;
-    font-size: 12px;
-    padding: 1px 5px;
-    vertical-align: middle; /* 垂直居中 */
-  }
+
   .post-image{
     width: 100%;
     height: 100%;

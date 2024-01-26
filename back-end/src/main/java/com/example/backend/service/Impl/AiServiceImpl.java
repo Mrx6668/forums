@@ -15,7 +15,7 @@ public class AiServiceImpl implements AiService {
     AiClient aiClient;
     @Resource
     FlowUtils flowUtils;
-    private static final String aiTitlePromote = "请你现在充当一个标题生成器，用于生成社区论坛帖子的标题，请根据以下内容生成一个合理、吸引人的标题（必须在50字内）：";
+    private static final String aiTitlePromote = "请你现在充当一个标题生成器，用于生成社区论坛帖子的标题，请根据以下内容生成一个合理、吸引人的标题（必须在50个字符之内内）：";
     @Override
     public String aiTitle(String content,int userId) {
         if (!flowUtils.limitPeriodCounterCheck(Const.AI_TITLE_GENERATE_LIMIT,5,60))

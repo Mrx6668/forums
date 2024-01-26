@@ -50,14 +50,21 @@ const routes = createRouter({
             component: () => import('../views/IndexView.vue'),
             children: [
                 {
-                  path: "posts",
-                  name: "posts",
-                  component:()=>import('../views/forum/Posts.vue')
-                },
-                {
-                    path: "post-detail/:pid",
-                    name: "post-detail",
-                    component:()=>import('../views/forum/PostDetail.vue')
+                    path: '',
+                    name: 'posts',
+                    component: () => import("@/views/forum/Forum.vue"),
+                    children: [
+                        {
+                            path: "posts",
+                            name: "posts",
+                            component: () => import('../views/forum/Posts.vue')
+                        },
+                        {
+                            path: "post-detail/:pid",
+                            name: "post-detail",
+                            component: () => import('../views/forum/PostDetail.vue')
+                        }
+                    ]
                 },
                 {
                     path: "user-setting",
