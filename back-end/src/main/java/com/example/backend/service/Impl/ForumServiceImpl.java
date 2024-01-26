@@ -7,6 +7,7 @@ import com.example.backend.entity.dto.Post;
 import com.example.backend.entity.dto.PostDTO;
 import com.example.backend.entity.vo.request.PostCreateVO;
 import com.example.backend.entity.vo.respones.PostPreviewVO;
+import com.example.backend.entity.vo.respones.TopPostVO;
 import com.example.backend.mapper.ForumMapper;
 import com.example.backend.mapper.PostMapper;
 import com.example.backend.service.ForumService;
@@ -118,6 +119,11 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
         vo.setContent(previewText.length() > 300 ? previewText.substring(0, 300) : previewText.toString());
         vo.setImages(images);
         return vo;
+    }
+
+    @Override
+    public List<TopPostVO> getTopPost() {
+        return postMapper.getTopPost();
     }
 
     //    private boolean contentLimitCheck(JSONObject object) {

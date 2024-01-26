@@ -1,16 +1,35 @@
 <script setup>
 
 import LightCard from "@/components/LightCard.vue";
-import {Calendar, Clock, CollectionTag, EditPen, Link} from "@element-plus/icons-vue";
-import {computed,reactive} from "vue";
+import {
+  Calendar,
+  Clock,
+  CollectionTag,
+  Compass,
+  Document,
+  Edit,
+  EditPen,
+  Link,
+  Microphone,
+  Picture
+} from "@element-plus/icons-vue";
+import {computed,reactive,watch} from "vue";
 import {get} from "@/net";
 import { ref, onMounted, onUnmounted } from 'vue';
 import axios from "axios";
 import {useStore} from "@/store";
 import {ElMessage} from "element-plus";
 import PostEditor from "@/components/PostEditor.vue";
+import ColorDot from "@/components/ColorDot.vue";
 const store = useStore()
-
+const type = ref(0)
+const postList = ref([])
+const page = ref(0)
+const end = ref(false)
+const top = ref([])
+watch(type,()=>{
+  resetList()
+})
 let currentTime = ref(new Date().toLocaleString());
 let intervalId;
 onMounted(() => {
@@ -29,10 +48,25 @@ onMounted(async () => {
 });
 
 get('api/forum/types',(data)=>{
-  console.log("types:",data)
   // console.log("editor.types:",editor.types)
-  store.forum.types = data
+  const array = []
+  array.push({id:0,title:'全部',color:'linear-gradient(45deg,white,red,orange,gold,green,blue)'})
+  data.forEach(d=>array.push(d))
+  store.forum.types = array
+  console.log("types:",store.forum.types)
 })
+
+function onPostSuccess() {
+  editor.value = false
+  resetList()
+}
+
+function resetList(){
+  page.value = 0
+  end.value = false
+  postList.value = []
+  updateList()
+}
 
 const weather = reactive({
   location:{},
@@ -66,14 +100,26 @@ const onImageLoad = () => {
 };
 
 const editor = ref(false)
-const postList = ref(null)
+
 function updateList(){
-  get('/api/forum/list-post?page=0&type=0',(data)=>{
-    postList.value = data
+  if (end.value) return
+  get(`/api/forum/list-post?page=${page.value}&type=${type.value}`,(data)=>{
+    if(data){
+      data.forEach(d=>postList.value.push(d))
+      page.value++
+    }
+    if (!data || data.length < 10){
+      end.value = true
+    }
+    // postList.value = data
     // console.log("postList.value: "+data)
   })
 }
+get('api/forum/top-post',data=>{
+  top.value = data
+})
 updateList()
+
 </script>
 
 <template>
@@ -84,38 +130,65 @@ updateList()
           <el-icon><EditPen/></el-icon>
           点击发布帖子
         </div>
+        <div style="margin-top: 10px;display: flex;gap: 13px;font-size: 18px;color: grey">
+          <el-icon><Edit/></el-icon>
+          <el-icon><Document/></el-icon>
+          <el-icon><Compass/></el-icon>
+          <el-icon><Picture/></el-icon>
+          <el-icon><Microphone/></el-icon>
+        </div>
       </LightCard>
-      <div style="margin-top: 10px;display: flex;flex-direction: column;gap: 10px" v-if="store.forum.types">
-        <LightCard class="post-card" v-for="item in postList" >
-          <div style="display:flex;">
-            <div>
-              <el-avatar size="default" :src="`${axios.defaults.baseURL}/api/image/get?imageName=`+item.avatar"></el-avatar>
-            </div>
-            <div style="margin-left: 7px">
-              <el-text style="font-weight: bold;font-size: 13px;margin-bottom: 2px">{{item.username}}</el-text>
-<!--              <el-text  type="info"></el-text>-->
-              <div style="font-weight: bold;font-size: 12px;color: grey;margin-top: 2px">
-                <el-icon><Clock/></el-icon>
-                <div style="margin-left: 2px;display: inline-block;transform: translateY(-2px)">{{new Date(item.createTime).toLocaleString()}}</div>
+      <LightCard style="margin-top: 10px;display: flex;gap: 7px">
+        <div :class="`type-select-card ${type === item.id ? 'active' : ''}`"
+             v-for="item in store.forum.types"
+             @click="type = item.id">
+          <ColorDot :color="item.color"/>
+          <span>{{item.title}}</span>
+        </div>
+      </LightCard>
+      <LightCard style="margin-top: 10px;display: flex;flex-direction: column;gap: 10px">
+        <div v-for="item in top" class="top-post" style="">
+          <el-tag type="info">置顶</el-tag>
+          <div class="top-post-title" style="">{{item.title}}</div>
+          <div>{{new Date(item.createTime).toLocaleDateString()}}</div>
+        </div>
+      </LightCard>
+      <transition name="el-fade-in" mode="out-in">
+        <div v-if="postList?.length">
+          <div style="margin-top: 10px;display: flex;flex-direction: column;gap: 10px" v-if="store.forum.types" v-infinite-scroll="updateList">
+            <LightCard class="post-card" v-for="item in postList" >
+              <div style="display:flex;">
+                <div>
+                  <el-avatar size="default" :src="`${axios.defaults.baseURL}/api/image/get?imageName=`+item.avatar"></el-avatar>
+                </div>
+                <div style="margin-left: 7px">
+                  <el-text style="font-weight: bold;font-size: 13px;margin-bottom: 2px">{{item.username}}</el-text>
+                  <!--              <el-text  type="info"></el-text>-->
+                  <div style="font-weight: bold;font-size: 12px;color: grey;margin-top: 2px">
+                    <el-icon><Clock/></el-icon>
+                    <div style="margin-left: 2px;display: inline-block;transform: translateY(-2px)">{{new Date(item.createTime).toLocaleString()}}</div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          <div style="margin-top: 5px">
-            <el-text class="post-type" :style="{
+              <div style="margin-top: 5px">
+                <el-text class="post-type" :style="{
               color:store.findTypeById(item.postType)?.color + 'EE',
               'border-color' : store.findTypeById(item.postType)?.color + '77',
               'background-color' : store.findTypeById(item.postType)?.color + '22'
             }">{{store.findTypeById(item.postType).title}}</el-text>
-            <span style="font-weight: bold;margin-left: 7px;font-size: 16px">{{item.title}}</span>
+                <span style="font-weight: bold;margin-left: 7px;font-size: 16px">{{item.title}}</span>
+              </div>
+              <el-text class="post-content" type="info">{{item.content}}</el-text>
+              <!--          <div class="post-content">{{item.content}}</div>-->
+              <div style="display: grid;grid-template-columns: repeat(3,1fr);grid-gap: 10px">
+                <el-image class="post-image" v-for="img in item?.images" :src="img" fit="cover"></el-image>
+              </div>
+            </LightCard>
           </div>
-          <el-text class="post-content" type="info">{{item.content}}</el-text>
-<!--          <div class="post-content">{{item.content}}</div>-->
-          <div style="display: grid;grid-template-columns: repeat(3,1fr);grid-gap: 10px">
-            <el-image class="post-image" v-for="img in item?.images" :src="img" fit="cover"></el-image>
-          </div>
-        </LightCard>
-      </div>
-    </div>
+        </div>
+
+      </transition>
+     </div>
     <div style="width: 300px;">
       <div style="position: sticky;top: 20px">
         <LightCard>
@@ -171,11 +244,50 @@ updateList()
         </div>
       </div>
     </div>
-    <PostEditor :show="editor" @createSuccess="editor=false;updateList()" @close="editor = false"></PostEditor>
+    <PostEditor :show="editor" @createSuccess="onPostSuccess()" @close="editor = false"></PostEditor>
   </div>
 </template>
 
 <style lang="less" scoped>
+.top-post{
+  display: flex;
+  .top-post-title{
+      font-size: 14px;
+      margin: auto 0 auto 10px;
+      //margin-left: 10px;
+      font-weight: bold;
+      opacity: 0.8;
+      transition: color .4s;
+    &:hover{
+      color: var(--el-color-primary);
+    }
+  }
+  &:hover{
+    cursor: pointer;
+  }
+  div:nth-of-type(2){
+    flex: 1;
+    color: grey;
+    font-size: 13px;
+    text-align: right;
+  }
+}
+
+.type-select-card{
+  background-color: #f5f5f5;
+  padding: 2px 7px;
+  font-size: 14px;
+  border-radius: 3px;
+  box-sizing: border-box;
+  transition: background-color 0.3s;
+  &.active{
+    border: solid 1px var(--el-color-success);
+  }
+  &:hover{
+    cursor: pointer;
+    background-color: #dadada;
+  }
+}
 .post-card{
   padding: 15px;
   transition: transform 0.3s linear;
@@ -213,18 +325,33 @@ updateList()
   justify-content: space-between;
 }
 .create-post{
-  background-color: grey;
+  background-color: var(--el-color-info-light-9);
   border-radius: 5px;
   height: 40px;
   font-size: 14px;
   line-height:40px ;
   padding: 0 10px;
+  transition: background-color 0.3s ease;
   &:hover{
     cursor: pointer;
+    background-color: var(--el-color-info-light-7);
   }
 }
-.dark .create-post{
-  background-color: #303030;
+.dark{
+  .dark .create-post{
+    background-color: #303030;
+  }
+  .type-select-card{
+    background-color: #282828;
+    &.active{
+      border: solid 1px #64594b;
+    }
+    &:hover{
+      background-color: #5e5e5e;
+    }
+  }
 }
+
+
 
 </style>

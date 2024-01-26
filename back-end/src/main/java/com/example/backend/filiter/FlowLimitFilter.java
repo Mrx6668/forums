@@ -66,7 +66,7 @@ public class FlowLimitFilter extends HttpFilter {
             Long increment = Optional.ofNullable(template.opsForValue().increment(Const.FLOW_LIMIT_COUNTER + ip)).orElse(0L);
             //如果存在，则自增
             if (increment > limit) {
-                log.info("封禁ip：{}", ip);
+                log.info("封禁ip：{}，{}s内访问{}次", ip, period, increment);
                 //如果数值》10，则丢进封禁列表
                 template.opsForValue().set(Const.FLOW_LIMIT_BLOCK + ip, "", block, TimeUnit.SECONDS);
                 return false;

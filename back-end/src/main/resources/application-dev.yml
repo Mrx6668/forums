@@ -41,6 +41,6 @@ minio:
 weather:
   key: d54232adea8849b6b3ab89fbb700e8e6
 FlowLimit:
-  limit: 30
-  period: 30
+  limit: 20
+  period: 10
   block: 20
