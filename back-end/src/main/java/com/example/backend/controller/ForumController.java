@@ -1,9 +1,9 @@
 package com.example.backend.controller;
 
 import com.example.backend.entity.RestBean;
-import com.example.backend.entity.dto.Post;
 import com.example.backend.entity.dto.PostDTO;
 import com.example.backend.entity.vo.request.PostCreateVO;
+import com.example.backend.entity.vo.respones.PostDetailVO;
 import com.example.backend.entity.vo.respones.PostPreviewVO;
 import com.example.backend.entity.vo.respones.TopPostVO;
 import com.example.backend.entity.vo.respones.WeatherVO;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/forum")
+@RequestMapping("/api/forum")
 public class ForumController {
     @Resource
     WeatherService weatherService;
@@ -49,15 +49,20 @@ public class ForumController {
     @GetMapping("/list-post")
     public RestBean<List<PostPreviewVO>> listPost(@RequestParam @Min(0) int page,
                                                   @RequestParam @Min(0) int type) {
-        List<PostPreviewVO> previewVOS = forumService.listPost(page, type);
+        List<PostPreviewVO> previewVOS = forumService.listPost(page + 1, type);
         return previewVOS.isEmpty()
                 ? RestBean.failure(400, "获取帖子列表失败，请刷新重试")
                 : RestBean.success(previewVOS);
     }
 
     @GetMapping("/top-post")
-    public RestBean<List<TopPostVO>> getTopPost(){
+    public RestBean<List<TopPostVO>> getTopPost() {
         List<TopPostVO> topPost = forumService.getTopPost();
         return RestBean.success(topPost);
+    }
+
+    @GetMapping("/post")
+    public RestBean<PostDetailVO> getPostDetail(@RequestParam @Min(0) int pid) {
+        return RestBean.success(forumService.getPostDetail(pid));
     }
 }

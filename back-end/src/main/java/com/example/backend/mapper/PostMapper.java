@@ -11,7 +11,9 @@ import java.util.List;
 @SuppressWarnings("SqlNoDataSourceInspection")
 @Mapper
 public interface PostMapper extends BaseMapper<Post> {
-    @Select("""
+
+    /*
+     @Select("""
            select * from db_post left join db_account on db_post.uid = db_account.id
            order by `create_time` desc limit ${start},10
            """)
@@ -23,9 +25,10 @@ public interface PostMapper extends BaseMapper<Post> {
            order by `create_time` desc limit ${start},10
            """)
     List<Post> postListByType(int start,int type);
+     */
 
     @Select("""
-            select * from db_post where `top`=1
+            select * from db_post where `top` = 1
             """)
     List<TopPostVO> getTopPost();
 }

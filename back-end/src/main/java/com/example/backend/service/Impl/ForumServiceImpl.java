@@ -2,22 +2,24 @@ package com.example.backend.service.Impl;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.backend.entity.dto.Post;
-import com.example.backend.entity.dto.PostDTO;
+import com.example.backend.entity.dto.*;
 import com.example.backend.entity.vo.request.PostCreateVO;
+import com.example.backend.entity.vo.respones.PostDetailVO;
 import com.example.backend.entity.vo.respones.PostPreviewVO;
 import com.example.backend.entity.vo.respones.TopPostVO;
-import com.example.backend.mapper.ForumMapper;
-import com.example.backend.mapper.PostMapper;
+import com.example.backend.mapper.*;
 import com.example.backend.service.ForumService;
-import com.example.backend.utils.BeanUtils;
 import com.example.backend.utils.CacheUtils;
 import com.example.backend.utils.Const;
 import com.example.backend.utils.FlowUtils;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -30,6 +32,12 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
     ForumMapper forumMapper;
     @Resource
     PostMapper postMapper;
+    @Resource
+    AccountMapper accountMapper;
+    @Resource
+    AccountDetailsMapper accountDetailsMapper;
+    @Resource
+    AccountPrivacyMapper accountPrivacyMapper;
     @Resource
     FlowUtils flowUtils;
     @Resource
@@ -83,26 +91,37 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
     }
 
     @Override
-    public List<PostPreviewVO> listPost(int page, int type) {
-        String key = Const.FORUM_POST_PREVIEW_CACHE + page + ":" + type;
-        List<Post> posts;
+    public List<PostPreviewVO> listPost(int pageNum, int type) {
+        String key = Const.FORUM_POST_PREVIEW_CACHE + pageNum + ":" + type;
+//        List<Post> posts;
         //从缓存中取
         List<PostPreviewVO> previewVOS = cacheUtils.takeListFromCache(key, PostPreviewVO.class);
         if (previewVOS != null) return previewVOS;
-        //分类别 如果传入0 则不不限类别从数据库查询
-        if (type == 0)
-            posts = postMapper.postList(page * 10);
-        else
-            posts = postMapper.postListByType(page * 10, type);
+        Page<Post> page = Page.of(pageNum, 10);
+//        if (page.getSize() == 0) return null;
+        LambdaQueryWrapper<Post> wrapper = Wrappers.<Post>lambdaQuery()
+                .eq(type != 0, Post::getPostType, type)
+                .orderByDesc(Post::getCreateTime);
+        Page<Post> postPage = postMapper.selectPage(page, wrapper);
+//        //分类别 如果传入0 则不不限类别从数据库查询
+//        if (type == 0)
+//            postMapper.selectPage(page, wrapper);
+//            posts = postMapper.postList(pageNum * 10);
+//        else
+//            posts = postMapper.postListByType(pageNum * 10, type);
+        List<Post> posts = postPage.getRecords();
         if (posts.isEmpty()) return null;
         previewVOS = posts.stream().map(this::resolvePostToPostView).toList();
         cacheUtils.saveListToCache(key, previewVOS, 30);
         return previewVOS;
     }
+
     //解析帖子中content内容 分离image 减少预览的字数300字
     private PostPreviewVO resolvePostToPostView(Post post) {
         PostPreviewVO vo = new PostPreviewVO();
-        vo = BeanUtils.copyBeans(post, PostPreviewVO.class);
+        BeanUtils.copyProperties(post, vo);
+        Account account = accountMapper.selectById(post.getUid());
+        BeanUtils.copyProperties(account, vo, "id");
         List<String> images = new ArrayList<>();
         StringBuilder previewText = new StringBuilder();
         JSONArray ops = JSONObject.parseObject(post.getContent()).getJSONArray("ops");
@@ -126,6 +145,26 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
         return postMapper.getTopPost();
     }
 
+    @Override
+    public PostDetailVO getPostDetail(int pid) {
+        PostDetailVO vo = new PostDetailVO();
+        Post post = this.getById(pid);
+        if (post == null) return null;
+        BeanUtils.copyProperties(post, vo);
+        PostDetailVO.User user = new PostDetailVO.User();
+        vo.setUser(this.fillUserDetailsByPrivacy(user, post.getUid()));
+        return vo;
+    }
+
+    private <T> T fillUserDetailsByPrivacy(T target, int uid) {
+        AccountDetails accountDetails = accountDetailsMapper.selectById(uid);
+        Account account = accountMapper.selectById(uid);
+        AccountPrivacy accountPrivacy = accountPrivacyMapper.selectById(uid);
+        String[] ignores = accountPrivacy.hiddenFields();
+        BeanUtils.copyProperties(account, target, ignores);
+        BeanUtils.copyProperties(accountDetails, target, ignores);
+        return target;
+    }
     //    private boolean contentLimitCheck(JSONObject object) {
 //        if (object == null) return false;
 //        long length = 0;

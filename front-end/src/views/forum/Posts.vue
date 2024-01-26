@@ -21,6 +21,7 @@ import {useStore} from "@/store";
 import {ElMessage} from "element-plus";
 import PostEditor from "@/components/PostEditor.vue";
 import ColorDot from "@/components/ColorDot.vue";
+import router from "@/router";
 const store = useStore()
 const type = ref(0)
 const postList = ref([])
@@ -156,7 +157,7 @@ updateList()
       <transition name="el-fade-in" mode="out-in">
         <div v-if="postList?.length">
           <div style="margin-top: 10px;display: flex;flex-direction: column;gap: 10px" v-if="store.forum.types" v-infinite-scroll="updateList">
-            <LightCard class="post-card" v-for="item in postList" >
+            <LightCard class="post-card" v-for="item in postList" @click="router.push('/index/post-detail/'+item.id)" >
               <div style="display:flex;">
                 <div>
                   <el-avatar size="default" :src="`${axios.defaults.baseURL}/api/image/get?imageName=`+item.avatar"></el-avatar>
