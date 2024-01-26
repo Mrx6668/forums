@@ -1,5 +1,7 @@
 package com.example.backend.config;
 
+import com.baomidou.mybatisplus.annotation.DbType;
+import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import io.minio.MinioClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,5 +34,13 @@ public class WebConfiguration {
     @Bean
     public RestTemplate restTemplate(){
         return new RestTemplate();
+    }
+
+    @Bean
+    public PaginationInnerInterceptor paginationInnerInterceptor(){
+        log.info("Mybatis Plus 分页器 注册中 PaginationInnerInterceptor");
+        PaginationInnerInterceptor paginationInnerInterceptor = new PaginationInnerInterceptor(DbType.MYSQL);
+        paginationInnerInterceptor.setMaxLimit(100L);
+        return paginationInnerInterceptor;
     }
 }

@@ -23,6 +23,6 @@ public class Post {
     String content;
     Integer postType;
     Date createTime;
-    String username;
-    String avatar;
+//    String username;
+//    String avatar;
 }

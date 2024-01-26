@@ -175,7 +175,7 @@ function AIGenerateTitle(){
       <div style="display: flex;gap: 10px">
         <div style="width: 150px;">
           <el-select v-model="editor.type" value-key="id" placeholder="请选择主题/类型" :disabled="!store.forum.types.length">
-            <el-option v-for="item in store.forum.types" :value="item" :label="item.title">
+            <el-option v-for="item in store.forum.types.filter(type => type.id > 0)" :value="item" :label="item.title">
               <div>
                 <ColorDot :color="item.color"></ColorDot>
                 <span style="margin-left: 5px">{{item.title}}</span>
@@ -184,7 +184,7 @@ function AIGenerateTitle(){
           </el-select>
         </div>
         <div style="flex: 1">
-          <el-input v-model="editor.title" :prefix-icon="Document" placeholder="请输入帖子标题"
+          <el-input v-model="editor.title" max-length="50" :prefix-icon="Document" placeholder="请输入帖子标题"
             v-loading="aiLoading" element-loading-text="loading..." maxlength="50" minlength="1"
           ></el-input>
         </div>

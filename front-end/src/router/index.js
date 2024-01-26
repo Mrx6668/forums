@@ -55,6 +55,11 @@ const routes = createRouter({
                   component:()=>import('../views/forum/Posts.vue')
                 },
                 {
+                    path: "post-detail/:pid",
+                    name: "post-detail",
+                    component:()=>import('../views/forum/PostDetail.vue')
+                },
+                {
                     path: "user-setting",
                     name: "user-setting",
                     component: () => import('../views/settings/UserSetting.vue')
