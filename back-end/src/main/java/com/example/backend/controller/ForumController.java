@@ -1,6 +1,7 @@
 package com.example.backend.controller;
 
 import com.example.backend.entity.RestBean;
+import com.example.backend.entity.dto.Interact;
 import com.example.backend.entity.dto.PostDTO;
 import com.example.backend.entity.vo.request.PostCreateVO;
 import com.example.backend.entity.vo.respones.PostDetailVO;
@@ -14,8 +15,10 @@ import com.example.backend.utils.ControllerUtils;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -64,5 +67,14 @@ public class ForumController {
     @GetMapping("/post")
     public RestBean<PostDetailVO> getPostDetail(@RequestParam @Min(0) int pid) {
         return RestBean.success(forumService.getPostDetail(pid));
+    }
+
+    @GetMapping("/interact")
+    public RestBean<Void> interact(@RequestParam @Min(0) int pid,
+                                   @RequestParam @Pattern(regexp = "(like|collect|browse)") String type,
+                                   @RequestParam boolean state,
+                                   @RequestAttribute(Const.ATTR_USER_ID) int userId) {
+        String interact = forumService.interact(new Interact(pid, userId, new Date(), type), state);
+        return RestBean.success();
     }
 }

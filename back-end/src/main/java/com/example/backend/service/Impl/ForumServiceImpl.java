@@ -20,9 +20,13 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,6 +46,8 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
     FlowUtils flowUtils;
     @Resource
     CacheUtils cacheUtils;
+    @Resource
+    StringRedisTemplate stringRedisTemplate;
 
     @PostConstruct
     private void initTypeSet() {
@@ -165,6 +171,62 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
         BeanUtils.copyProperties(accountDetails, target, ignores);
         return target;
     }
+
+    private void saveInteract(String type) {
+        synchronized (type.intern()) {
+            List<Interact> check = new LinkedList<>();
+            List<Interact> uncheck = new LinkedList<>();
+            stringRedisTemplate.opsForHash().entries(type).forEach((k, v) -> {
+                if (Boolean.parseBoolean(v.toString()))
+                    check.add(Interact.parseInteract(k.toString(), type));
+                else
+                    uncheck.add(Interact.parseInteract(k.toString(), type));
+            });
+            if (!check.isEmpty()){
+                log.info("check不为空，执行插入数据库！");
+                postMapper.addInsert(check, type);
+            }
+            if (!uncheck.isEmpty()){
+                log.info("uncheck不为空，执行删除数据库！");
+                postMapper.deleteInsert(uncheck, type);
+            }
+            log.info("redis删除缓存执行！");
+            stringRedisTemplate.delete(type);
+        }
+    }
+
+    @Override
+    public String interact(Interact interact, boolean state) {
+        String type = interact.getType();
+        synchronized (type.intern()) {
+            //先放到redis作缓存
+            stringRedisTemplate.opsForHash().put(type, interact.toKey(), Boolean.toString(state));
+            this.saveInteractSchedule(type);
+        }
+        return null;
+    }
+
+    private final Map<String, Boolean> state = new HashMap<>();
+    ScheduledExecutorService service = Executors.newScheduledThreadPool(2);
+
+    private void saveInteractSchedule(String type) {
+        if (!state.getOrDefault(type, false)) {
+            log.info("定时任务执行！");
+            state.put(type, true);
+            service.schedule(() -> {
+                try {
+                    log.info("saveInteract执行！");
+                    this.saveInteract(type);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+                state.put(type, false);
+            }, 3, TimeUnit.SECONDS);
+        }else {
+            log.info("定时任务没有执行！");
+        }
+    }
+
     //    private boolean contentLimitCheck(JSONObject object) {
 //        if (object == null) return false;
 //        long length = 0;

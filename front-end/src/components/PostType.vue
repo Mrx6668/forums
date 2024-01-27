@@ -12,7 +12,7 @@ defineProps({
               color:store.findTypeById(type)?.color + 'EE',
               'border-color' : store.findTypeById(type)?.color + '77',
               'background-color' : store.findTypeById(type)?.color + '22'}">
-    {{ store.findTypeById(type).title }}
+    {{ store.findTypeById(type)?.title }}
   </el-text>
 </template>
 
