@@ -3,16 +3,23 @@ import {ref,reactive,computed} from "vue";
 import {useRoute} from "vue-router";
 import {get} from "@/net";
 import axios from "axios";
-import {ArrowLeft, Compass, Female, Hide, Male} from "@element-plus/icons-vue";
+import {ArrowLeft, CircleCheck, Compass, Female, Hide, Male, Pointer, Star} from "@element-plus/icons-vue";
 import {QuillDeltaToHtmlConverter} from "quill-delta-to-html";
 import Card from "@/components/Card.vue";
 import PostType from "@/components/PostType.vue";
+import InteractButton from "@/components/InteractButton.vue";
+import {ElMessage} from "element-plus";
 const route = useRoute();
 const pid = route.params.pid
 
 const post = reactive({
   data:null,
   comments:[]
+})
+
+const interact = reactive({
+  like:false,
+  collect:false,
 })
 
 function getDetail() {
@@ -29,6 +36,25 @@ const content = computed(()=>{
   const converter = new QuillDeltaToHtmlConverter(ops,{inlineStyle:true})
   return converter.convert()
 })
+
+function clickInteract(type,message) {
+  // interact[type] = !interact[type]
+  // if (interact[type]) {
+  //   ElMessage.success(`${message}成功`)
+  // }else {
+  //   ElMessage.success(`已取消${message}`)
+  // }
+
+  get(`api/forum/interact?pid=${pid}&type=${type}&state=${!interact[type]}`, (data) => {
+    interact[type] = !interact[type]
+    if (interact[type]) {
+      ElMessage.success(`${message}成功`)
+    }else {
+      ElMessage.success(`已取消${message}`)
+    }
+
+  })
+}
 </script>
 
 <template>
@@ -36,7 +62,7 @@ const content = computed(()=>{
     <div class="post-main" style="position: sticky;top: 0;z-index: 10">
       <Card style="display: flex;width: 100%">
         <el-button :icon="ArrowLeft" size="small" round plain type="info" @click="$router.go(-1)">返回列表</el-button>
-        <div style="flex: 1;text-align: center;margin: auto 0" >
+        <div style="flex: 1;text-align: center;margin: auto 0" v-if="post.data?.postType" >
           <PostType :type="post.data.postType"/>
           <el-text style="margin-left: 5px" size="large">{{post.data.title}}</el-text>
         </div>
@@ -77,8 +103,20 @@ const content = computed(()=>{
         </div>
       </div>
       <div class="post-main-right">
-        <div class="post-content" v-html="content">
-
+        <div class="post-content" v-html="content"></div>
+        <div style="text-align: right;margin-top: 30px">
+<!--          <interact-button name="点赞">-->
+<!--            <el-icon><CircleCheck/></el-icon>-->
+<!--          </interact-button>-->
+<!--          <interact-button name="收藏">-->
+<!--            <el-icon><Star/></el-icon>-->
+<!--          </interact-button>-->
+          <el-button @click="clickInteract('like','点赞')"
+                     :type="interact.like ? 'success' : 'info'"
+                     plain round :icon="Pointer">{{interact.like ? '已点赞':'点赞'}}</el-button>
+          <el-button @click="clickInteract('collect','收藏')"
+                     :type="interact.collect ? 'warning' : 'info'"
+                     plain round :icon="Star">{{interact.collect ? '已收藏':'收藏'}}</el-button>
         </div>
       </div>
     </div>

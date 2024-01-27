@@ -1,6 +1,7 @@
 package com.example.backend.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.backend.entity.dto.Interact;
 import com.example.backend.entity.dto.Post;
 import com.example.backend.entity.dto.PostDTO;
 import com.example.backend.entity.vo.request.PostCreateVO;
@@ -16,4 +17,5 @@ public interface ForumService  extends IService<Post> {
     List<PostPreviewVO> listPost(int page,int type);
     List<TopPostVO> getTopPost();
     PostDetailVO getPostDetail(int pid);
+    String interact(Interact interact,boolean state);
 }
