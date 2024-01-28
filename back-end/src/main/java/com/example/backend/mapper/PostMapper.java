@@ -3,12 +3,13 @@ package com.example.backend.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.backend.entity.dto.Interact;
 import com.example.backend.entity.dto.Post;
+import com.example.backend.entity.vo.respones.PostDetailVO;
 import com.example.backend.entity.vo.respones.TopPostVO;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
+import com.example.backend.utils.SqlProvider;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("SqlNoDataSourceInspection")
 @Mapper
@@ -63,4 +64,21 @@ public interface PostMapper extends BaseMapper<Post> {
             select count(*) from db_post_interact_${type} where pid = #{pid} and uid = #{uid}
             """)
     int userInteractCount(int pid, int uid, String type);
+    @Select("""
+            select title,post_type,id from db_post_interact_collect 
+            left join db_post on db_post_interact_collect.pid = db_post.id
+            where db_post_interact_collect.uid = #{userId}
+            """)
+    List<PostDetailVO> listPostCollects(int userId);
+
+    @Delete("""
+            
+            delete from db_post_interact_collect 
+            where uid = #{userId} and pid = #{pid}
+            """)
+    int removeCollect(int userId, int pid);
+
+    @UpdateProvider(type = SqlProvider.class, method = "updateViews")
+    Long updateViews(Map<Integer, Long> map);
+
 }

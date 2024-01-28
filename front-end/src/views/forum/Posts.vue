@@ -186,14 +186,20 @@ updateList()
               <div style="display: grid;grid-template-columns: repeat(3,1fr);grid-gap: 10px">
                 <el-image class="post-image" v-for="img in item?.images" :src="img" fit="cover"></el-image>
               </div>
-              <div style="margin-top: 10px">
-                <el-button size="small"
-                           :type="item.like ? 'success' : 'info'"
-                           plain round :icon="Pointer"> {{item.like}}</el-button>
-                <el-button size="small"
-                           :type="item.collect ? 'warning' : 'info'"
-                           plain round :icon="Star"> {{item.collect}}</el-button>
+              <div style="display:flex;justify-content: space-between;margin-top: 10px">
+                <div style="">
+                  <el-button size="small"
+                             :type="item.like ? 'success' : 'info'"
+                             plain round :icon="Pointer"> {{item.like}}</el-button>
+                  <el-button size="small"
+                             :type="item.collect ? 'warning' : 'info'"
+                             plain round :icon="Star"> {{item.collect}}</el-button>
+                </div>
+                <div>
+                  <el-text type="info">浏览{{item.views}}次</el-text>
+                </div>
               </div>
+
 
             </LightCard>
           </div>
@@ -304,7 +310,7 @@ updateList()
   padding: 15px;
   transition: transform 0.3s linear;
   &:hover{
-    transform: scale(1.03);
+    transform: scale(1.02);
     cursor: pointer;
     transition: transform 0.3s linear;
   }

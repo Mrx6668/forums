@@ -13,12 +13,13 @@ import {
   Files,
   Location, Lock, Message, Monitor, Operation,
   Position,
-  School, Search, User
+  School, Search, Star, User
 } from "@element-plus/icons-vue";
+import PostCollectList from "@/components/PostCollectList.vue";
 
 const store = useStore()
 const loading = ref(true)//加载效果
-
+const collect = ref(false)
 const searchInput = reactive({
   type:'1',
   text:''
@@ -71,6 +72,10 @@ function userLogout() {
                 <el-dropdown-item>
                   <el-icon><Operation/></el-icon>
                   个人设置
+                </el-dropdown-item>
+                <el-dropdown-item @click="collect = true">
+                  <el-icon><Star/></el-icon>
+                  我的收藏
                 </el-dropdown-item>
                 <el-dropdown-item>
                   <el-icon><Message/></el-icon>
@@ -203,6 +208,7 @@ function userLogout() {
           </el-scrollbar>
         </el-main>
       </el-container>
+      <PostCollectList :show="collect" @close="collect = false"/>
     </el-container>
   </div>
 

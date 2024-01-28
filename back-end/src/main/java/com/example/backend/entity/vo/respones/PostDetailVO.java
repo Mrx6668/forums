@@ -14,6 +14,7 @@ public class PostDetailVO {
     Date createTime;
     User user;
     Interact interact;
+    Long views;
     @Data
     public static class User {
         Integer id;

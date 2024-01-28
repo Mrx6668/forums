@@ -75,7 +75,18 @@ public class ForumController {
                                    @RequestParam @Pattern(regexp = "(like|collect)") String type,
                                    @RequestParam boolean state,
                                    @RequestAttribute(Const.ATTR_USER_ID) int userId) {
-        String interact = forumService.interact(new Interact(pid, userId, new Date(), type), state);
+        forumService.interact(new Interact(pid, userId, new Date(), type), state);
+        return RestBean.success();
+    }
+
+    @GetMapping("/collects")
+    public RestBean<List<PostPreviewVO>> collects(@RequestAttribute(Const.ATTR_USER_ID) int userId){
+        return RestBean.success(forumService.listPostCollects(userId));
+    }
+    @PostMapping("/remove-collect/{pid}")
+    public RestBean<Void> removeCollect(@RequestAttribute(Const.ATTR_USER_ID) int userId,
+                                        @PathVariable int pid){
+        forumService.removeCollect(userId,pid);
         return RestBean.success();
     }
 }

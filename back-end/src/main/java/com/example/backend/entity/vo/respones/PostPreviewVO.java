@@ -13,6 +13,7 @@ public class PostPreviewVO {
     String content;
     List<String> images;
     Date createTime;
+    Long views;
     Integer uid;
     String username;
     String avatar;

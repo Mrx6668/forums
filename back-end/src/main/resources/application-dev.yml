@@ -23,7 +23,7 @@ spring:
     virtual-host: /
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/forums?useUnicode=true&characterEncoding=utf8
+    url: jdbc:mysql://localhost:3306/forums?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true
     username: root
     password: root
   data:
@@ -44,6 +44,6 @@ FlowLimit:
   limit: 50
   period: 10
   block: 20
-#mybatis-plus:
-#  configuration:
-#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

@@ -23,6 +23,7 @@ public class Post {
     String content;
     Integer postType;
     Date createTime;
+    Long views;
 //    String username;
 //    String avatar;
 }

@@ -18,4 +18,7 @@ public interface ForumService  extends IService<Post> {
     List<TopPostVO> getTopPost();
     PostDetailVO getPostDetail(int pid,int userId);
     String interact(Interact interact,boolean state);
+    List<PostPreviewVO> listPostCollects(int userId);
+
+    void removeCollect(int userId, int pid);
 }

@@ -116,6 +116,7 @@ function clickInteract(type, message) {
             <el-text style="margin-left: 3px;opacity: 0.7;" type="info">
               发帖时间：{{ new Date(post.data.createTime).toLocaleString() }}
             </el-text>
+            <el-text style="margin-left: 10px;opacity: 0.7;" type="info">浏览{{post.data.views}}次</el-text>
           </div>
             <div>
               <el-button @click="clickInteract('like','点赞')"
