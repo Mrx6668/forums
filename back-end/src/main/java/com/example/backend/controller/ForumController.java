@@ -65,13 +65,14 @@ public class ForumController {
     }
 
     @GetMapping("/post")
-    public RestBean<PostDetailVO> getPostDetail(@RequestParam @Min(0) int pid) {
-        return RestBean.success(forumService.getPostDetail(pid));
+    public RestBean<PostDetailVO> getPostDetail(@RequestParam @Min(0) int pid,
+                                                @RequestAttribute(Const.ATTR_USER_ID) int userId) {
+        return RestBean.success(forumService.getPostDetail(pid,userId));
     }
 
     @GetMapping("/interact")
     public RestBean<Void> interact(@RequestParam @Min(0) int pid,
-                                   @RequestParam @Pattern(regexp = "(like|collect|browse)") String type,
+                                   @RequestParam @Pattern(regexp = "(like|collect)") String type,
                                    @RequestParam boolean state,
                                    @RequestAttribute(Const.ATTR_USER_ID) int userId) {
         String interact = forumService.interact(new Interact(pid, userId, new Date(), type), state);

@@ -42,7 +42,7 @@ public interface PostMapper extends BaseMapper<Post> {
                 </foreach>
             </script>
             """)
-    void addInsert(List<Interact> interacts,String type);
+    void addInsert(List<Interact> interacts, String type);
 
     @Insert("""
             <script>
@@ -52,5 +52,15 @@ public interface PostMapper extends BaseMapper<Post> {
                 </foreach>
             </script>
             """)
-    void deleteInsert(List<Interact> interacts,String type);
+    void deleteInsert(List<Interact> interacts, String type);
+
+    @Select("""
+            select count(*) from db_post_interact_${type} where pid = #{pid}
+            """)
+    int interactCount(int pid, String type);
+
+    @Select("""
+            select count(*) from db_post_interact_${type} where pid = #{pid} and uid = #{uid}
+            """)
+    int userInteractCount(int pid, int uid, String type);
 }

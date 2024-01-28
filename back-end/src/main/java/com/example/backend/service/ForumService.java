@@ -16,6 +16,6 @@ public interface ForumService  extends IService<Post> {
     String createPost(int userId, PostCreateVO vo);
     List<PostPreviewVO> listPost(int page,int type);
     List<TopPostVO> getTopPost();
-    PostDetailVO getPostDetail(int pid);
+    PostDetailVO getPostDetail(int pid,int userId);
     String interact(Interact interact,boolean state);
 }

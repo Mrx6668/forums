@@ -1,5 +1,6 @@
 package com.example.backend.entity.vo.respones;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Date;
@@ -12,6 +13,7 @@ public class PostDetailVO {
     Integer postType;
     Date createTime;
     User user;
+    Interact interact;
     @Data
     public static class User {
         Integer id;
@@ -23,5 +25,11 @@ public class PostDetailVO {
         String wx;
         String phone;
         String email;
+    }
+    @Data
+    @AllArgsConstructor
+    public static class Interact{
+        Boolean like;
+        Boolean collect;
     }
 }

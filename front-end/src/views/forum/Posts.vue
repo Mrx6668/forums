@@ -11,7 +11,7 @@ import {
   EditPen,
   Link,
   Microphone,
-  Picture
+  Picture, Pointer, Star
 } from "@element-plus/icons-vue";
 import {computed,reactive,watch} from "vue";
 import {get} from "@/net";
@@ -186,6 +186,15 @@ updateList()
               <div style="display: grid;grid-template-columns: repeat(3,1fr);grid-gap: 10px">
                 <el-image class="post-image" v-for="img in item?.images" :src="img" fit="cover"></el-image>
               </div>
+              <div style="margin-top: 10px">
+                <el-button size="small"
+                           :type="item.like ? 'success' : 'info'"
+                           plain round :icon="Pointer"> {{item.like}}</el-button>
+                <el-button size="small"
+                           :type="item.collect ? 'warning' : 'info'"
+                           plain round :icon="Star"> {{item.collect}}</el-button>
+              </div>
+
             </LightCard>
           </div>
         </div>

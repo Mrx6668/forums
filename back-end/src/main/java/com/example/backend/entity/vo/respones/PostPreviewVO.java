@@ -16,4 +16,6 @@ public class PostPreviewVO {
     Integer uid;
     String username;
     String avatar;
+    int like;
+    int collect;
 }

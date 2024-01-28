@@ -44,3 +44,6 @@ FlowLimit:
   limit: 50
   period: 10
   block: 20
+#mybatis-plus:
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

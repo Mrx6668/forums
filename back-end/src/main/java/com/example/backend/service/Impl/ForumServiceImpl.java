@@ -128,6 +128,8 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
         BeanUtils.copyProperties(post, vo);
         Account account = accountMapper.selectById(post.getUid());
         BeanUtils.copyProperties(account, vo, "id");
+        vo.setLike(postMapper.interactCount(post.getId(),"like"));
+        vo.setCollect(postMapper.interactCount(post.getId(),"collect"));
         List<String> images = new ArrayList<>();
         StringBuilder previewText = new StringBuilder();
         JSONArray ops = JSONObject.parseObject(post.getContent()).getJSONArray("ops");
@@ -152,14 +154,27 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
     }
 
     @Override
-    public PostDetailVO getPostDetail(int pid) {
+    public PostDetailVO getPostDetail(int pid,int userId) {
         PostDetailVO vo = new PostDetailVO();
         Post post = this.getById(pid);
         if (post == null) return null;
         BeanUtils.copyProperties(post, vo);
         PostDetailVO.User user = new PostDetailVO.User();
         vo.setUser(this.fillUserDetailsByPrivacy(user, post.getUid()));
+        PostDetailVO.Interact interact = new PostDetailVO.Interact(
+                getInteract(pid, userId, "like"),
+                getInteract(pid, userId, "collect")
+        );
+        vo.setInteract(interact);
         return vo;
+    }
+
+    private Boolean getInteract(int pid, int uid, String type) {
+        String key = pid + ":" + uid;
+        Object state = stringRedisTemplate.opsForHash().get(type, key);
+        Boolean cacheState = state == null ? null : Boolean.parseBoolean((String) state);
+        if (cacheState != null) return cacheState;
+        return postMapper.userInteractCount(pid, uid, type) > 0;
     }
 
     private <T> T fillUserDetailsByPrivacy(T target, int uid) {
@@ -182,11 +197,11 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
                 else
                     uncheck.add(Interact.parseInteract(k.toString(), type));
             });
-            if (!check.isEmpty()){
+            if (!check.isEmpty()) {
                 log.info("check不为空，执行插入数据库！");
                 postMapper.addInsert(check, type);
             }
-            if (!uncheck.isEmpty()){
+            if (!uncheck.isEmpty()) {
                 log.info("uncheck不为空，执行删除数据库！");
                 postMapper.deleteInsert(uncheck, type);
             }
@@ -217,24 +232,13 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
                 try {
                     log.info("saveInteract执行！");
                     this.saveInteract(type);
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
                 state.put(type, false);
-            }, 3, TimeUnit.SECONDS);
-        }else {
+            }, 5, TimeUnit.SECONDS);
+        } else {
             log.info("定时任务没有执行！");
         }
     }
-
-    //    private boolean contentLimitCheck(JSONObject object) {
-//        if (object == null) return false;
-//        long length = 0;
-//        for (Object op : object.getJSONArray("ops")) {
-//            length += JSONObject.parseObject((String) op).getString("insert").length();
-//            if (length > 20000) return false;
-//        }
-//        return true;
-//    }
-
 }
