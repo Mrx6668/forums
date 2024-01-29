@@ -4,10 +4,7 @@ import com.example.backend.entity.RestBean;
 import com.example.backend.entity.dto.Interact;
 import com.example.backend.entity.dto.PostDTO;
 import com.example.backend.entity.vo.request.PostCreateVO;
-import com.example.backend.entity.vo.respones.PostDetailVO;
-import com.example.backend.entity.vo.respones.PostPreviewVO;
-import com.example.backend.entity.vo.respones.TopPostVO;
-import com.example.backend.entity.vo.respones.WeatherVO;
+import com.example.backend.entity.vo.respones.*;
 import com.example.backend.service.ForumService;
 import com.example.backend.service.WeatherService;
 import com.example.backend.utils.Const;
@@ -67,7 +64,7 @@ public class ForumController {
     @GetMapping("/post")
     public RestBean<PostDetailVO> getPostDetail(@RequestParam @Min(0) int pid,
                                                 @RequestAttribute(Const.ATTR_USER_ID) int userId) {
-        return RestBean.success(forumService.getPostDetail(pid,userId));
+        return RestBean.success(forumService.getPostDetail(pid, userId));
     }
 
     @GetMapping("/interact")
@@ -80,13 +77,20 @@ public class ForumController {
     }
 
     @GetMapping("/collects")
-    public RestBean<List<PostPreviewVO>> collects(@RequestAttribute(Const.ATTR_USER_ID) int userId){
+    public RestBean<List<PostPreviewVO>> collects(@RequestAttribute(Const.ATTR_USER_ID) int userId) {
         return RestBean.success(forumService.listPostCollects(userId));
     }
+
     @PostMapping("/remove-collect/{pid}")
     public RestBean<Void> removeCollect(@RequestAttribute(Const.ATTR_USER_ID) int userId,
-                                        @PathVariable int pid){
-        forumService.removeCollect(userId,pid);
+                                        @PathVariable int pid) {
+        forumService.removeCollect(userId, pid);
         return RestBean.success();
+    }
+
+    @PostMapping("/update-post")
+    public RestBean<Void> updateTopic(@RequestBody @Valid PostUpdateVO vo,
+                                      @RequestAttribute(Const.ATTR_USER_ID) int userId) {
+        return ControllerUtils.messageHandle(() -> forumService.updatePost(userId, vo));
     }
 }

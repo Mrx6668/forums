@@ -1,7 +1,7 @@
 <script setup>
 import {Check, Document, EditPen} from "@element-plus/icons-vue";
 import {reactive,computed,ref} from "vue";
-import {Quill, QuillEditor} from "@vueup/vue-quill";
+import {Delta, Quill, QuillEditor} from "@vueup/vue-quill";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
 import ImageResize from "quill-image-resize-vue";
 import {ImageExtend,QuillWatch} from "quill-image-super-solution-module"
@@ -14,8 +14,42 @@ const store = useStore()
 // const postList = ref(null)
 Quill.register("modules/ImageExtend", ImageExtend);
 Quill.register("modules/imageResize", ImageResize);
-defineProps({
-  show: Boolean
+const props = defineProps({
+  show: Boolean,
+  defaultShowTitle:{
+    type:String,
+    default:'发布新的帖子'
+  },
+  defaultTitle:{
+    default:'',
+    type:String
+  },
+  defaultText:{
+    default:"",
+    type:String
+  },
+  defaultType:{
+    default:null,
+    type:Number
+  },
+  submitButton:{
+    type:String,
+    default:'立即发布'
+  },
+  // submitUrl:String,
+  submitMethod:{
+    type:Function,
+    default:(editor,success)=>{
+      post('api/forum/create-post',{
+        type: editor.type.id,
+        title: editor.title,
+        content: editor.content
+      },()=>{
+        ElMessage.success("发布成功！")
+        success()
+      })
+    }
+  }
 })
 const editor = reactive({
   type: null,
@@ -96,8 +130,8 @@ const editorPotion = {
 }
 
 function submitPost() {
-  console.info("editor-content-delta：",editor.content)
-  console.info("editor-content-text：",deltaToText(editor.content))
+  // console.info("editor-content-delta：",editor.content)
+  // console.info("editor-content-text：",deltaToText(editor.content))
   const text = deltaToText(editor.content)
   if (!editor.title) {
     ElMessage.error("帖子标题不能为空！")
@@ -111,12 +145,16 @@ function submitPost() {
     ElMessage.error("帖子类型不能为空！")
     return
   }
-  post('api/forum/create-post',{
-    type: editor.type.id,
-    title: editor.title,
-    content: editor.content
-  },()=>{
-    ElMessage.success("发布成功！")
+  // post('api/forum/create-post',{
+  //   type: editor.type.id,
+  //   title: editor.title,
+  //   content: editor.content
+  // },()=>{
+  //   ElMessage.success("发布成功！")
+  //   emit('createSuccess')
+  // })
+  // props.submitMethod()
+  props.submitMethod(editor,success=>{
     emit('createSuccess')
   })
 }
@@ -134,12 +172,24 @@ const contentLength = computed(()=>{
 })
 const refEditor = ref()
 function initEditor(){
-  refEditor.value.setContents('','user')
-  editor.type = null
-  editor.title = ''
+  if (props.defaultText)
+    editor.content = new Delta(JSON.parse(props.defaultText))
+  else
+    refEditor.value.setContents('','user')
+  editor.title = props.defaultTitle
+  editor.type = findTypeById(props.defaultType)
   // editor.content = ''
 }
+
+function findTypeById(id){
+  for (let type of store.forum.types){
+    if (type.id === id)
+      return type
+  }
+}
+
 const aiLoading = ref(false)
+
 function AIGenerateTitle(){
   let content = deltaToText(editor.content)
   if (content.length < 5 || content.length > 5000 ){
@@ -167,7 +217,7 @@ function AIGenerateTitle(){
         @close="emit('close')" :close-on-click-modal="false">
       <template #header>
         <div>
-          <el-text style="font-size: 20px;font-weight: bold" type="primary">发布新的帖子</el-text>
+          <el-text style="font-size: 20px;font-weight: bold" type="primary">{{props.defaultShowTitle}}</el-text>
           <br>
           <el-text type="info">请遵守相关规定，文明发帖</el-text>
         </div>
@@ -205,7 +255,7 @@ function AIGenerateTitle(){
       <div style="display: flex;justify-content: space-between;margin-top: 5px">
         <el-text type="info" >当前字数{{contentLength}}（最大支持20000字）</el-text>
         <div>
-          <el-button :icon="Check" @click="submitPost" plain type="primary">立即发布</el-button>
+          <el-button :icon="Check" @click="submitPost" plain type="primary">{{ submitButton }}</el-button>
         </div>
       </div>
 

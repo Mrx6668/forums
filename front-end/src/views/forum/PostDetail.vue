@@ -1,18 +1,20 @@
 <script setup>
 import {ref, reactive, computed} from "vue";
 import {useRoute} from "vue-router";
-import {get} from "@/net";
+import {get,post as _post} from "@/net";
 import axios from "axios";
-import {ArrowLeft, CircleCheck, Compass, Female, Hide, Male, Pointer, Star} from "@element-plus/icons-vue";
+import {ArrowLeft, CircleCheck, Compass, EditPen, Female, Hide, Male, Pointer, Star} from "@element-plus/icons-vue";
 import {QuillDeltaToHtmlConverter} from "quill-delta-to-html";
 import Card from "@/components/Card.vue";
 import PostType from "@/components/PostType.vue";
 import InteractButton from "@/components/InteractButton.vue";
 import {ElMessage} from "element-plus";
+import {useStore} from "@/store";
+import PostEditor from "@/components/PostEditor.vue";
 
 const route = useRoute();
 const pid = route.params.pid
-
+const store = useStore()
 const post = reactive({
   data: null,
   comments: []
@@ -22,6 +24,10 @@ const interact = reactive({
   like: false,
   collect: false,
 })
+
+
+
+const edit = ref(false);
 
 function getDetail() {
   get(`api/forum/post?pid=${pid}`, (data) => {
@@ -62,6 +68,19 @@ function clickInteract(type, message) {
       ElMessage.success(`已取消${message}`)
     }
 
+  })
+}
+
+function updatePost(editor){
+  _post(`api/forum/update-post`,{
+    id:pid,
+    type: editor.type.id,
+    title: editor.title,
+    content: editor.content
+  },()=>{
+    edit.value = false
+    ElMessage.success("修改成功！")
+    getDetail()
   })
 }
 </script>
@@ -119,6 +138,10 @@ function clickInteract(type, message) {
             <el-text style="margin-left: 10px;opacity: 0.7;" type="info">浏览{{post.data.views}}次</el-text>
           </div>
             <div>
+              <el-button @click="edit = true"
+                         type="primary" v-if="store.user.id === post.data.user.id"
+                         plain round :icon="EditPen">编辑帖子
+              </el-button>
               <el-button @click="clickInteract('like','点赞')"
                          :type="interact.like ? 'success' : 'info'"
                          plain round :icon="Pointer">{{ interact.like ? '已点赞' : '点赞' }}
@@ -128,13 +151,13 @@ function clickInteract(type, message) {
                          plain round :icon="Star">{{ interact.collect ? '已收藏' : '收藏' }}
               </el-button>
             </div>
-
         </div>
       </div>
-      <div>
-
-      </div>
     </div>
+    <PostEditor v-if="post.data && store.user.id === post.data.user.id && store.forum.types"
+                :default-type="post.data.postType" :default-title="post.data.title" :default-text="post.data.content"
+                submit-button="更新帖子内容" :submit-method="updatePost" default-show-title="修改当前帖子"
+                :show="edit" @close="edit = false"/>
   </div>
 </template>
 

@@ -7,6 +7,7 @@ import com.example.backend.entity.dto.PostDTO;
 import com.example.backend.entity.vo.request.PostCreateVO;
 import com.example.backend.entity.vo.respones.PostDetailVO;
 import com.example.backend.entity.vo.respones.PostPreviewVO;
+import com.example.backend.entity.vo.respones.PostUpdateVO;
 import com.example.backend.entity.vo.respones.TopPostVO;
 
 import java.util.List;
@@ -21,4 +22,5 @@ public interface ForumService  extends IService<Post> {
     List<PostPreviewVO> listPostCollects(int userId);
 
     void removeCollect(int userId, int pid);
+    String updatePost(int userId, PostUpdateVO vo);
 }

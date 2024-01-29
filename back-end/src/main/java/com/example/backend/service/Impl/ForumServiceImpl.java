@@ -10,6 +10,7 @@ import com.example.backend.entity.dto.*;
 import com.example.backend.entity.vo.request.PostCreateVO;
 import com.example.backend.entity.vo.respones.PostDetailVO;
 import com.example.backend.entity.vo.respones.PostPreviewVO;
+import com.example.backend.entity.vo.respones.PostUpdateVO;
 import com.example.backend.entity.vo.respones.TopPostVO;
 import com.example.backend.mapper.*;
 import com.example.backend.service.ForumService;
@@ -98,6 +99,20 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
     }
 
     @Override
+    public String updatePost(int userId, PostUpdateVO vo) {
+        if (!contentLimitCheck(vo.getContent())) return "文章字数过多，请调整后再试！";
+        if (!typeSet.contains(vo.getType())) return "对应分类非法，请不要恶意请求！";
+        postMapper.update(null, Wrappers.<Post>update()
+                .eq("uid", userId)
+                .eq("id", vo.getId())
+                .set("title", vo.getTitle())
+                .set("content", vo.getContent().toString())
+                .set("post_type", vo.getType())
+        );
+        return null;
+    }
+
+    @Override
     public List<PostPreviewVO> listPost(int pageNum, int type) {
         String key = Const.FORUM_POST_PREVIEW_CACHE + pageNum + ":" + type;
 //        List<Post> posts;
@@ -173,9 +188,9 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
 
     private long getViewsCount(int pid) {
         String key = Const.FORUM_POST_VIEW_COUNT;
-        if (Boolean.FALSE.equals(redisTemplate.hasKey(key))) {
+        if (Boolean.FALSE.equals(redisTemplate.opsForHash().hasKey(key, String.valueOf(pid)))) {
             long views = this.getById(pid).getViews();
-            redisTemplate.opsForHash().put(key,String.valueOf(pid),String.valueOf(views));
+            redisTemplate.opsForHash().put(key, String.valueOf(pid), String.valueOf(views));
 //            redisTemplate.opsForValue().set(key, String.valueOf(views));
         }
         Long increment = redisTemplate.opsForHash().increment(key, String.valueOf(pid), 1);
@@ -268,19 +283,19 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
                     e.printStackTrace();
                 }
                 state.put("views", false);
-            }, 10, TimeUnit.SECONDS);
+            }, 15, TimeUnit.SECONDS);
         }
     }
 
     private void saveViews() {
         // map中 key：id ， value 更新的值
-        Map<Integer,Long> map = new HashMap<>();
-        redisTemplate.opsForHash().entries(Const.FORUM_POST_VIEW_COUNT).forEach((k,v)->{
-            map.put(Integer.valueOf(k.toString()), Long.valueOf(v.toString()) );
-            redisTemplate.opsForHash().delete(Const.FORUM_POST_VIEW_COUNT,k);
+        Map<Integer, Long> map = new HashMap<>();
+        redisTemplate.opsForHash().entries(Const.FORUM_POST_VIEW_COUNT).forEach((k, v) -> {
+            map.put(Integer.valueOf(k.toString()), Long.valueOf(v.toString()));
+            redisTemplate.opsForHash().delete(Const.FORUM_POST_VIEW_COUNT, k);
         });
         Long updated = postMapper.updateViews(map);
-        log.info("saveViews 更新了 {} 条记录",updated);
+        log.info("saveViews 更新了 {} 条记录", updated);
 //        redisTemplate.delete(Const.FORUM_POST_VIEW_COUNT);
     }
 
