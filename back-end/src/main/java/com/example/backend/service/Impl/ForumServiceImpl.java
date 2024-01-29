@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.backend.entity.dto.*;
+import com.example.backend.entity.vo.request.AddCommentVO;
 import com.example.backend.entity.vo.request.PostCreateVO;
 import com.example.backend.entity.vo.respones.PostDetailVO;
 import com.example.backend.entity.vo.respones.PostPreviewVO;
@@ -45,6 +46,8 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
     @Resource
     AccountPrivacyMapper accountPrivacyMapper;
     @Resource
+    PostCommentMapper commentMapper;
+    @Resource
     FlowUtils flowUtils;
     @Resource
     CacheUtils cacheUtils;
@@ -64,7 +67,7 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
         return forumMapper.getPostTypes();
     }
 
-    private boolean contentLimitCheck(JSONObject object) {
+    private boolean contentLimitCheck(JSONObject object, int max) {
         if (object == null) return false;
         long length = 0;
         JSONArray ops = object.getJSONArray("ops");
@@ -73,7 +76,7 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
             if (op.containsKey("insert")) {
                 String insert = op.getString("insert");
                 length += insert.length();
-                if (length > 20000) return false;
+                if (length > max) return false;
             }
         }
         return true;
@@ -81,7 +84,7 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
 
     @Override
     public String createPost(int userId, PostCreateVO vo) {
-        if (!contentLimitCheck(vo.getContent())) return "文章字数过多，请调整后再试！";
+        if (!contentLimitCheck(vo.getContent(), 20000)) return "文章字数过多，请调整后再试！";
         if (!typeSet.contains(vo.getType())) return "对应分类非法，请不要恶意请求！";
         String key = Const.FORUM_POST_CREATE_LIMIT + userId;
         if (!flowUtils.limitPeriodCounterCheck(key, 3, 1800)) return "发文过于频繁，请稍后再试！";
@@ -100,7 +103,7 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
 
     @Override
     public String updatePost(int userId, PostUpdateVO vo) {
-        if (!contentLimitCheck(vo.getContent())) return "文章字数过多，请调整后再试！";
+        if (!contentLimitCheck(vo.getContent(), 20000)) return "文章字数过多，请调整后再试！";
         if (!typeSet.contains(vo.getType())) return "对应分类非法，请不要恶意请求！";
         postMapper.update(null, Wrappers.<Post>update()
                 .eq("uid", userId)
@@ -313,5 +316,20 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
     @Override
     public void removeCollect(int userId, int pid) {
         postMapper.removeCollect(userId, pid);
+    }
+
+    @Override
+    public String addComment(int userId, AddCommentVO vo) {
+        String key = Const.FORUM_POST_COMMENT_COUNTER + userId;
+        if (!contentLimitCheck(JSONObject.parseObject(vo.getContent()), 2000))
+            return "评论字数过多，请调整后再试！";
+        if (!flowUtils.limitPeriodCounterCheck(key, 3, 60))
+            return "发评论过于频繁，请稍后再试！";
+        PostComment comment = new PostComment();
+        comment.setUid(userId);
+        BeanUtils.copyProperties(vo,comment);
+        comment.setTime(new Date());
+        commentMapper.insert(comment);
+        return null;
     }
 }

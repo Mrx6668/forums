@@ -21,5 +21,6 @@ public interface Const {
     String AI_TITLE_GENERATE_LIMIT = "forum:aiTitlePromote:";
     String FORUM_POST_PREVIEW_CACHE = "forum:post:preview:";
     String FORUM_POST_VIEW_COUNT = "forum:post:count";
+    String FORUM_POST_COMMENT_COUNTER = "forum:post:comment";
 
 }

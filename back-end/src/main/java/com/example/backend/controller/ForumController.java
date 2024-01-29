@@ -3,6 +3,7 @@ package com.example.backend.controller;
 import com.example.backend.entity.RestBean;
 import com.example.backend.entity.dto.Interact;
 import com.example.backend.entity.dto.PostDTO;
+import com.example.backend.entity.vo.request.AddCommentVO;
 import com.example.backend.entity.vo.request.PostCreateVO;
 import com.example.backend.entity.vo.respones.*;
 import com.example.backend.service.ForumService;
@@ -92,5 +93,11 @@ public class ForumController {
     public RestBean<Void> updateTopic(@RequestBody @Valid PostUpdateVO vo,
                                       @RequestAttribute(Const.ATTR_USER_ID) int userId) {
         return ControllerUtils.messageHandle(() -> forumService.updatePost(userId, vo));
+    }
+
+    @PostMapping("add-comment")
+    public RestBean<Void> addComment(@RequestAttribute(Const.ATTR_USER_ID) int userId,
+                                     @Valid @RequestBody AddCommentVO vo) {
+        return ControllerUtils.messageHandle(()-> forumService.addComment(userId,vo));
     }
 }
