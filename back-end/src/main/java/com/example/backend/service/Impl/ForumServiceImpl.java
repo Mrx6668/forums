@@ -12,6 +12,7 @@ import com.example.backend.entity.vo.request.PostCreateVO;
 import com.example.backend.entity.vo.respones.*;
 import com.example.backend.mapper.*;
 import com.example.backend.service.ForumService;
+import com.example.backend.service.NotificationService;
 import com.example.backend.utils.CacheUtils;
 import com.example.backend.utils.Const;
 import com.example.backend.utils.FlowUtils;
@@ -45,6 +46,8 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
     AccountPrivacyMapper accountPrivacyMapper;
     @Resource
     PostCommentMapper commentMapper;
+    @Resource
+    NotificationService notificationService;
     @Resource
     FlowUtils flowUtils;
     @Resource
@@ -337,7 +340,35 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
         BeanUtils.copyProperties(vo, comment);
         comment.setTime(new Date());
         int insert = commentMapper.insert(comment);
-        return insert > 0 ? null : "数据更新失败，请联系管理员";
+        if (insert < 1) return "数据更新失败，请联系管理员";
+        comment_addNotification(userId, vo);
+        return null;
+    }
+
+    private void comment_addNotification(int userId, AddCommentVO vo) {
+        Post post = postMapper.selectById(vo.getPid());
+        Account account = accountMapper.selectById(userId);
+        if (vo.getQuote() > 0) {
+            // 评论被回复
+            PostComment com = commentMapper.selectById(vo.getQuote());
+            //不是自己回复自己
+            if (!Objects.equals(account.getId(), com.getUid())) {
+                notificationService.addNotification(
+                        com.getUid(),
+                        "您的评论被回复",
+                        account.getUsername() + " 回复了你发表的评论，快去看看吧",
+                        "success", "/index/post-detail/" + com.getPid()
+                );
+            }
+        } else if (!Objects.equals(account.getId(), post.getUid())) {
+            notificationService.addNotification(
+                    post.getUid(),
+                    "您有新的帖子回复",
+                    account.getUsername() + "回复了你发表的帖子：" + post.getTitle() + ",去看看吧",
+                    "success",
+                    "/index/post-detail/" + post.getId()
+            );
+        }
     }
 
     @Override

@@ -114,4 +114,5 @@ public class ForumController {
 
         return forumService.deleteComment(id, userId) > 0 ? RestBean.success() : RestBean.failure(400, "删除失败！");
     }
+
 }

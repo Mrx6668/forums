@@ -109,7 +109,10 @@ const editor = ref(false)
 
 function updateList(){
   // if (route.name !== 'posts') return
-  if (end.value) return
+  if (end.value){
+    ElMessage.info("已经翻到底了哦")
+    return
+  }
   console.log("updateList!")
   get(`/api/forum/list-post?page=${page.value}&type=${type.value}`,(data)=>{
     if(data){

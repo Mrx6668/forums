@@ -6,7 +6,7 @@ import {ref,reactive} from "vue";
 import {
   Back,
   Bell,
-  ChatDotSquare, Collection,
+  ChatDotSquare, Check, Collection,
   Connection, DataLine,
   Document,
   EditPen,
@@ -16,6 +16,7 @@ import {
   School, Search, Star, User
 } from "@element-plus/icons-vue";
 import PostCollectList from "@/components/PostCollectList.vue";
+import LightCard from "@/components/LightCard.vue";
 
 const store = useStore()
 const loading = ref(true)//加载效果
@@ -36,17 +37,27 @@ function userLogout() {
     router.push('/')
   });
 }
+const notification = ref([])
 
-import { onActivated, onDeactivated } from 'vue'
-import routes from "@/router";
-// 在 keep-alive 组件激活时调用
-onActivated(() => {
-  console.log('onActivated')
-})
-// 在 keep-alive 组件停用时调用
-onDeactivated(() => {
-  console.log('onDeactivated')
-})
+const loadNotification = ()=>{
+  get('api/notification/list', (data) => {
+    notification.value = data
+  })
+}
+loadNotification()
+
+function confirmNotification(id,url){
+  get(`/api/notification/delete?id=${id}`,()=>{
+    loadNotification()
+    window.open(url)
+  })
+}
+
+function deleteAllNotification(){
+  get(`/api/notification/delete-all`,()=>{
+    loadNotification()
+  })
+}
 
 </script>
 
@@ -71,6 +82,38 @@ onDeactivated(() => {
           </el-input>
         </div>
         <div class="user-info">
+
+          <el-popover placement="bottom"
+                      :width="350" trigger="hover">
+            <template #reference>
+              <el-badge style="margin-right: 30px" is-dot :hidden="!notification.length">
+                <div class="notification">
+                  <el-icon><Bell/></el-icon>
+                  <div style="font-size: 13px">消息</div>
+                </div>
+              </el-badge>
+            </template>
+            <el-empty :image-size="80" description="暂无未读消息！" v-if="!notification.length"/>
+            <el-scrollbar max-height="500" v-else>
+              <LightCard v-for="item in notification" class="notification-item"
+              @click="confirmNotification(item.id,item.url)"
+              >
+                <div>
+                  <el-tag size="small" :type="item.type">消息</el-tag>
+                  <span style="font-weight: bold;margin: auto 0 auto 3px">{{item.title}}</span>
+                </div>
+                <el-divider style="margin: 7px 0 3px 0"/>
+                <div style="font-size: 13px;color: grey">
+                  {{item.content}}
+                </div>
+              </LightCard>
+            </el-scrollbar>
+            <div style="margin-top: 20px">
+              <el-button size="small" type="info" :icon="Check" plain
+                         @click="deleteAllNotification" style="width: 100%"
+              >清除全部未读消息</el-button>
+            </div>
+          </el-popover>
           <!--            style="flex: 1"  把剩余占满-->
           <div class="profile">
             <div>{{store.user.username}}</div>
@@ -233,6 +276,24 @@ onDeactivated(() => {
 </template>
 
 <style lang="less" scoped>
+.notification-item{
+  transition: .4s;
+  &:hover{
+    opacity: 0.7;
+    color: var(--el-color-primary);
+    cursor: pointer;
+  }
+}
+.notification{
+  font-size: 22px;
+  line-height: 14px;
+  text-align: center;
+  transition: color .3s;
+  &:hover{
+    color: grey;
+    cursor: pointer;
+  }
+}
 .main-content {
   height: 100vh;
   width: 100%;
