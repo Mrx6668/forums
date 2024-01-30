@@ -31,4 +31,6 @@ public interface ForumService extends IService<Post> {
 
     String addComment(int userId, AddCommentVO vo);
     List<CommentVO> comments(int pid,int page);
+
+    int deleteComment(int id, int userId);
 }

@@ -1,12 +1,11 @@
 <script setup>
-import {ref, reactive, computed} from "vue";
+import {ref, reactive} from "vue";
 import {useRoute} from "vue-router";
 import {get,post as _post} from "@/net";
 import axios from "axios";
 import {
-  ArrowLeft,
-  CircleCheck,
-  Compass,
+  ArrowLeft, ChatSquare,
+  Delete,
   EditPen,
   Female,
   Hide,
@@ -18,7 +17,6 @@ import {
 import {QuillDeltaToHtmlConverter} from "quill-delta-to-html";
 import Card from "@/components/Card.vue";
 import PostType from "@/components/PostType.vue";
-import InteractButton from "@/components/InteractButton.vue";
 import {ElMessage} from "element-plus";
 import {useStore} from "@/store";
 import PostEditor from "@/components/PostEditor.vue";
@@ -99,7 +97,7 @@ function updatePost(editor){
 const comment = reactive({
   show:false,
   text:'',
-  quote: -1
+  quote: Object
 })
 
 function loadComments(page){
@@ -113,6 +111,13 @@ function loadComments(page){
 function onCommentAdd(){
   comment.show = false
   loadComments(Math.floor(++post.data.comment/10)+1)
+}
+
+function deleteComment(id){
+  get(`/api/forum/delete-comment?id=${id}`,(data)=>{
+    ElMessage.success("删除评论成功！")
+    loadComments(post.page)
+  })
 }
 
 </script>
@@ -219,10 +224,27 @@ function onCommentAdd(){
           </div>
           <div class="post-main-right">
             <el-text style="margin-left: 3px;opacity: 0.7;" type="info">
-              发表时间：{{ new Date(item.time).toLocaleString() }}
+              评论时间：{{ new Date(item.time).toLocaleString() }}
             </el-text>
+            <div v-if="item.quote" class="comment-quote">
+              回复：{{item.quote}}
+            </div>
             <div class="post-content" v-html="convertToHTML(item.content)"></div>
+
+            <div style="position: absolute; right: 20px; bottom: 10px;">
+              <div style="text-align: right">
+                <el-link :icon="ChatSquare" @click="comment.show = true;comment.quote = item"
+                         type="info">
+                  &nbsp;回复评论
+                </el-link>
+                <el-link :icon="Delete" type="danger" v-if="item.user.id === store.user.id"
+                         style="margin-left: 20px" @click="deleteComment(item.id)">
+                  &nbsp;删除评论
+                </el-link>
+              </div>
+            </div>
           </div>
+
         </div>
         <div style="width: fit-content;margin: 20px auto">
           <el-pagination background layout="prev,pager,next"
@@ -239,7 +261,7 @@ function onCommentAdd(){
                 :show="edit" @close="edit = false"/>
     <post-comment-editor :show="comment.show" @close="comment.show = false" :pid="pid"
                          :quote="comment.quote" @comment="onCommentAdd"/>
-    <div class="add-comment"  @click="comment.show = true" style="bottom: 30px;right: 30px;">
+    <div class="add-comment"  @click="comment.show = true;comment.quote = null" style="bottom: 30px;right: 30px;">
       <el-icon><Plus/></el-icon>
     </div>
 
@@ -252,6 +274,14 @@ function onCommentAdd(){
 </template>
 
 <style scoped>
+.comment-quote{
+  font-size: 13px;
+  color: grey;
+  background: rgba(94,94,94,0.2);
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 5px;
+}
 .add-comment{
   position: fixed;
   width: 40px;
@@ -296,6 +326,7 @@ function onCommentAdd(){
 .post-main-right {
   padding: 10px 20px;
   width: 75%;
+  position: relative;
 }
 
 .post-content {

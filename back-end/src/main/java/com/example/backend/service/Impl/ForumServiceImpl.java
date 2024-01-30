@@ -192,7 +192,7 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
         );
         vo.setInteract(interact);
         vo.setViews(getViewsCount(pid));
-        vo.setComment(commentMapper.selectCount(Wrappers.<PostComment>query().eq("pid",pid)));
+        vo.setComment(commentMapper.selectCount(Wrappers.<PostComment>query().eq("pid", pid)));
         return vo;
     }
 
@@ -328,7 +328,7 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
     @Override
     public String addComment(int userId, AddCommentVO vo) {
         String key = Const.FORUM_POST_COMMENT_COUNTER + userId;
-        if (!contentLimitCheck(JSONObject.parseObject(vo.getContent()), 2000))
+        if (!contentLimitCheck(JSONObject.parseObject(vo.getContent()), 2100))
             return "评论字数过多，请调整后再试！";
         if (!flowUtils.limitPeriodCounterCheck(key, 3, 60))
             return "发评论过于频繁，请稍后再试！";
@@ -353,17 +353,30 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
                     CommentVO vo = new CommentVO();
                     BeanUtils.copyProperties(dto, vo);
                     if (dto.getQuote() > 0) {
-                        PostComment comment = commentMapper.selectOne(Wrappers.<PostComment>query().eq("id", dto.getQuote()));
-                        JSONObject object = JSONObject.parseObject(comment.getContent());
-                        StringBuilder builder = new StringBuilder();
-                        this.shortContent(object.getJSONArray("ops"), builder, ignore -> {
-                        });
-                        vo.setQuote(builder.toString());
+                        PostComment comment = commentMapper.selectOne(Wrappers.<PostComment>query()
+                                .eq("id", dto.getQuote()));
+                        if (comment != null) {
+                            JSONObject object = JSONObject.parseObject(comment.getContent());
+                            StringBuilder builder = new StringBuilder();
+                            this.shortContent(object.getJSONArray("ops"), builder, ignore -> {
+                            });
+                            vo.setQuote(builder.toString());
+                        } else {
+                            vo.setQuote("此评论已删除！");
+                        }
                     }
                     CommentVO.User user = new CommentVO.User();
-                    this.fillUserDetailsByPrivacy(user,dto.getUid());
+                    this.fillUserDetailsByPrivacy(user, dto.getUid());
                     vo.setUser(user);
                     return vo;
                 }).toList();
+    }
+
+    @Override
+    public int deleteComment(int id, int userId) {
+        return commentMapper.delete(Wrappers.<PostComment>query()
+                .eq("uid", userId)
+                .eq("id", id)
+        );
     }
 }
