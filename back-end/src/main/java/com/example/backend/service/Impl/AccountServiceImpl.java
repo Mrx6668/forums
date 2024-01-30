@@ -3,8 +3,12 @@ package com.example.backend.service.Impl;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.backend.entity.dto.Account;
+import com.example.backend.entity.dto.AccountDetails;
+import com.example.backend.entity.dto.AccountPrivacy;
 import com.example.backend.entity.vo.request.*;
+import com.example.backend.mapper.AccountDetailsMapper;
 import com.example.backend.mapper.AccountMapper;
+import com.example.backend.mapper.AccountPrivacyMapper;
 import com.example.backend.service.AccountService;
 import com.example.backend.utils.Const;
 import com.example.backend.utils.FlowUtils;
@@ -32,6 +36,10 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
     FlowUtils flowUtils;
     @Resource
     PasswordEncoder passwordEncoder;
+    @Resource
+    AccountPrivacyMapper privacyMapper;
+    @Resource
+    AccountDetailsMapper detailsMapper;
 
     @Override
     /*
@@ -88,9 +96,13 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
         if (existAccountByEmail(email)) return "邮箱已被注册，请更换邮箱";
         if (existAccountByUsername(username)) return "用户名已被注册，请更换用户名";
         String password = passwordEncoder.encode(vo.getPassword());
-        Account account = new Account(null, username, password, email, "user", null,new Date());
+        Account account = new Account(null, username, password, email, "user", null, new Date());
         if (this.save(account)) {
             stringRedisTemplate.delete(Const.VERIFY_EMAIL_DATA + email);
+            privacyMapper.insert(new AccountPrivacy(account.getId()));
+            AccountDetails details = new AccountDetails();
+            details.setId(account.getId());
+            detailsMapper.insert(details);
             return null;
         } else {
             return "发生错误！请联系管理员";
@@ -142,7 +154,6 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
 
     @Override
     public Account findAccountById(int userId) {
-
         return this.getById(userId);
     }
 
@@ -171,8 +182,8 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
         String oldPwd = account.getPassword();
         if (!passwordEncoder.matches(vo.getOldPassword(), oldPwd)) return false;
         return this.lambdaUpdate()
-                .set(Account::getPassword,passwordEncoder.encode(vo.getNewPassword()))
-                .eq(Account::getId,userId)
+                .set(Account::getPassword, passwordEncoder.encode(vo.getNewPassword()))
+                .eq(Account::getId, userId)
                 .update();
     }
 

@@ -5,7 +5,7 @@ export const useStore = defineStore('general', {
         state: () => {
             return {
                 user: {
-                    id:-1,
+                    id: -1,
                     username: '',
                     email: '',
                     role: '',
@@ -29,6 +29,11 @@ export const useStore = defineStore('general', {
                 for (let type of this.forum.types) {
                     if (type.id === id) return type
                 }
+            }, avatarUserUrl(avatar) {
+                if (avatar) {
+                    // console.log("尝试获取头像："+`${axios.defaults.baseURL}/api/image/get?imageName=${this.user.avatar}`)
+                    return `${axios.defaults.baseURL}/api/image/get?imageName=${avatar}`
+                } else return `https://i0.imgs.ovh/2023/12/10/fzBHK.md.jpeg`
             }
         }
     }

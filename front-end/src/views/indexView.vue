@@ -38,6 +38,7 @@ function userLogout() {
 }
 
 import { onActivated, onDeactivated } from 'vue'
+import routes from "@/router";
 // 在 keep-alive 组件激活时调用
 onActivated(() => {
   console.log('onActivated')
@@ -78,7 +79,7 @@ onDeactivated(() => {
           <el-dropdown size="large">
             <el-avatar  :src="store.avatarUrl"/>
             <template #dropdown>
-              <el-dropdown-menu>
+              <el-dropdown-menu @click="routes.push('/index/user-setting')">
                 <el-dropdown-item>
                   <el-icon><Operation/></el-icon>
                   个人设置

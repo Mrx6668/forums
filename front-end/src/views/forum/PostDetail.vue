@@ -136,7 +136,7 @@ function deleteComment(id){
     <div class="post-main">
       <div class="post-main-left">
         <el-avatar size="large"
-                   :src="axios.defaults.baseURL+'/api/image/get?imageName='+post.data.user.avatar"></el-avatar>
+                   :src="store.avatarUserUrl(post.data.user.avatar)"></el-avatar>
         <div>
           <el-text type="primary" size="large" style="font-weight: bold">
             {{ post.data.user.username }}
@@ -196,7 +196,8 @@ function deleteComment(id){
         <div class="post-main" style="margin-top: 10px" v-for="item in post.comments">
           <div class="post-main-left">
             <el-avatar size="large"
-                       :src="axios.defaults.baseURL+'/api/image/get?imageName='+item.user.avatar"></el-avatar>
+                       :src="store.avatarUserUrl(item.user.avatar)"
+                       ></el-avatar>
             <div>
               <el-text type="primary" size="large" style="font-weight: bold">
                 {{ item.user.username }}

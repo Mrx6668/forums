@@ -108,8 +108,9 @@ const onImageLoad = () => {
 const editor = ref(false)
 
 function updateList(){
-  if (route.name !== 'posts') return
+  // if (route.name !== 'posts') return
   if (end.value) return
+  console.log("updateList!")
   get(`/api/forum/list-post?page=${page.value}&type=${type.value}`,(data)=>{
     if(data){
       data.forEach(d=>postList.value.push(d))
@@ -128,23 +129,23 @@ get('api/forum/top-post',data=>{
 updateList()
 
 
-import { onActivated, onDeactivated } from 'vue'
-
-const scrollTop = ref(0)
-
-
-
-onActivated(() => {
-  console.log("恢复位置"+scrollTop.value)
-  // 激活时恢复滚动位置
-  window.scrollTo(0, scrollTop.value)
-})
-
-onDeactivated(() => {
-  // 失活时保存滚动位置
-  scrollTop.value =  document.body.scrollTop || window.pageYOffset
-  console.log("保存位置"+scrollTop.value)
-})
+// import { onActivated, onDeactivated } from 'vue'
+//
+// const scrollTop = ref(0)
+//
+//
+//
+// onActivated(() => {
+//   console.log("恢复位置"+scrollTop.value)
+//   // 激活时恢复滚动位置
+//   window.scrollTo(0, scrollTop.value)
+// })
+//
+// onDeactivated(() => {
+//   // 失活时保存滚动位置
+//   scrollTop.value =  document.body.scrollTop || window.pageYOffset
+//   console.log("保存位置"+scrollTop.value)
+// })
 
 </script>
 
@@ -179,14 +180,19 @@ onDeactivated(() => {
           <div style="margin: auto 0">{{new Date(item.createTime).toLocaleDateString()}}</div>
         </div>
       </LightCard>
+
       <transition name="el-fade-in" mode="out-in">
         <div v-if="postList?.length">
-          <div style="margin-top: 10px;display: flex;flex-direction: column;gap: 10px" v-if="store.forum.types" v-infinite-scroll="updateList">
+          <div style="margin-top: 10px;display: flex;flex-direction: column;gap: 10px"
+               v-if="store.forum.types" v-infinite-scroll="updateList" infinite-scroll-distance="15">
             <LightCard class="post-card" v-for="item in postList" @click="router.push('/index/post-detail/'+item.id)" >
               <div style="display:flex;">
                 <div>
-                  <el-avatar size="default" :src="`${axios.defaults.baseURL}/api/image/get?imageName=`+item.avatar"></el-avatar>
+                  <el-avatar size="default" :src="store.avatarUserUrl(item.avatar)"></el-avatar>
                 </div>
+<!--                <div>-->
+<!--                  <el-avatar size="default" :src="`${axios.defaults.baseURL}/api/image/get?imageName=`+item.avatar"></el-avatar>-->
+<!--                </div>-->
                 <div style="margin-left: 7px">
                   <el-text style="font-weight: bold;font-size: 13px;margin-bottom: 2px">{{item.username}}</el-text>
                   <!--              <el-text  type="info"></el-text>-->
@@ -380,7 +386,5 @@ onDeactivated(() => {
     }
   }
 }
-
-
 
 </style>

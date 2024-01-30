@@ -51,6 +51,7 @@ public class ForumController {
     public RestBean<List<PostPreviewVO>> listPost(@RequestParam @Min(0) int page,
                                                   @RequestParam @Min(0) int type) {
         List<PostPreviewVO> previewVOS = forumService.listPost(page + 1, type);
+        if (previewVOS == null) return RestBean.failure(400,"没有数据了");
         return previewVOS.isEmpty()
                 ? RestBean.failure(400, "获取帖子列表失败，请刷新重试")
                 : RestBean.success(previewVOS);

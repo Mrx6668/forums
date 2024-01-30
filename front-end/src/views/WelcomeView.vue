@@ -8,9 +8,9 @@
       <el-image style="width: 100%;height: 100%;" fit="cover" src="https://i.imgs.ovh/2023/10/11/XIrZ2.jpeg"/>
     </div>
     <div class="welcome-title">
-      <div style="font-size: 32px;font-weight: bold;letter-spacing: 2px">欢迎登录</div>
+      <div style="font-size: 32px;font-weight: bold;letter-spacing: 2px">欢迎登录本社区</div>
       <div style="margin-top: 15px;letter-spacing: 1px">design by</div>
-      <div style="margin-top: 5px;letter-spacing: 1px">vue+Java+jwt</div>
+      <div style="margin-top: 5px;letter-spacing: 1px">vue3 + element-ui + Java SpringBoot + jwt</div>
     </div>
     <div class="right-card">
       <router-view v-slot="{Component}">

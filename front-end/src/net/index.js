@@ -81,7 +81,7 @@ function login(username, password, remember, success, failure = defaultFailure) 
             'Content-Type': 'application/x-www-form-urlencoded',
         },(data) => {
             storeAccessToken(data.token, remember, data.expireTime)
-            ElMessage.success(`登录成功,欢迎${data.username}使用！`)
+            ElMessage.success(`登录成功,欢迎 ${data.username} 使用！`)
             success(data)
         },failure)
 }
