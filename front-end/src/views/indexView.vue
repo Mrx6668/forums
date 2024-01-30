@@ -10,13 +10,15 @@ import {
   Connection, DataLine,
   Document,
   EditPen,
+    Message,
   Files,
-  Location, Lock, Message, Monitor, Operation,
+  Location, Lock, Monitor, Operation,
   Position,
   School, Search, Star, User
 } from "@element-plus/icons-vue";
 import PostCollectList from "@/components/PostCollectList.vue";
 import LightCard from "@/components/LightCard.vue";
+
 
 const store = useStore()
 const loading = ref(true)//加载效果
@@ -37,11 +39,21 @@ function userLogout() {
     router.push('/')
   });
 }
-const notification = ref([])
+import { ElNotification } from 'element-plus'
 
+const notification = ref([])
+const message = ref(false)
 const loadNotification = ()=>{
   get('api/notification/list', (data) => {
     notification.value = data
+    if (notification.value.length > 0){
+      ElNotification({
+        title: `您有${notification.value.length}条新的消息`,
+        message: '请及时查看',
+        type: 'info',
+        offset:50
+      })
+    }
   })
 }
 loadNotification()
@@ -58,6 +70,29 @@ function deleteAllNotification(){
     loadNotification()
   })
 }
+
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
+
+
+
+function guide(){
+  const driverObj = driver({
+    showProgress: true,
+    steps: [
+      { element: '.top-nav', popover: { title: '欢迎来到本论坛', description: '接下来将会进行引导，介绍基本使用\n（仅供demo测试）' } },
+      { element: '.el-aside', popover: { title: '这里是菜单', description: '主要功能在这里，还有部分未开发功能' } },
+      { element: '.user-info', popover: { title: '用户信息区域', description: '在这里查看消息，个人收藏，或者退出登录' } },
+      { element: '.post', popover: { title: '主要信息区域', description: '在这里查看帖子列表，点击查看详情，进行主要的互动（点赞、评论、回复等）。还能查看公告、天气信息' } },
+      { element: '.safety', popover: { title: '个人信息修改', description: '在这里修改个人信息：修改密码、邮箱、联系方式、头像、隐私设置等等' } },
+      { element: 'main', popover: { title: '完成', description: '如果频繁见到此指引，请上传一个头像' } },
+    ]
+  });
+  driverObj.drive();
+}
+
+
+if (store.user.avatar === null){guide()}
 
 </script>
 
@@ -82,11 +117,11 @@ function deleteAllNotification(){
           </el-input>
         </div>
         <div class="user-info">
-
+          <el-button type="info" round plain style="margin-right: 10px" @click="guide">引导</el-button>
           <el-popover placement="bottom"
                       :width="350" trigger="hover">
             <template #reference>
-              <el-badge style="margin-right: 30px" is-dot :hidden="!notification.length">
+              <el-badge style="margin-right: 15px" is-dot :hidden="!notification.length">
                 <div class="notification">
                   <el-icon><Bell/></el-icon>
                   <div style="font-size: 13px">消息</div>
@@ -164,25 +199,25 @@ function deleteAllNotification(){
                     <b>帖子广场</b>
                   </template>
                 </el-menu-item>
-                <el-menu-item index="1-2">
+                <el-menu-item disabled index="1-2">
                   <template #title>
                     <el-icon><Bell></Bell></el-icon>
                     失物招领
                   </template>
                 </el-menu-item>
-                <el-menu-item index="1-3">
+                <el-menu-item disabled index="1-3">
                   <template #title>
                     <el-icon><School /></el-icon>
                     校园活动
                   </template>
                 </el-menu-item>
-                <el-menu-item index="1-4">
+                <el-menu-item disabled index="1-4">
                   <template #title>
                     <el-icon><Connection /></el-icon>
                     表白墙
                   </template>
                 </el-menu-item>
-                <el-menu-item index="1-5">
+                <el-menu-item disabled index="1-5">
                   <template #title>
                     <el-icon><EditPen /></el-icon>
                     某某考研
@@ -190,43 +225,43 @@ function deleteAllNotification(){
                   </template>
                 </el-menu-item>
               </el-sub-menu>
-              <el-sub-menu index="2">
+              <el-sub-menu  index="2">
                 <template #title>
                   <el-icon><Position/></el-icon>
                   <span><b>探索发现</b></span>
                 </template>
-                <el-menu-item >
+                <el-menu-item disabled >
                   <template #title>
                     <el-icon><Document /></el-icon>
                     成绩查询
                   </template>
                 </el-menu-item>
-                <el-menu-item >
+                <el-menu-item disabled >
                   <template #title>
                     <el-icon><Files /></el-icon>
                     课程表
                   </template>
                 </el-menu-item>
-                <el-menu-item >
+                <el-menu-item disabled >
                   <template #title>
                     <el-icon><Monitor /></el-icon>
                     教务通知
                   </template>
                 </el-menu-item>
-                <el-menu-item >
+                <el-menu-item disabled >
                   <template #title>
                     <el-icon><Collection /></el-icon>
                     在线图书馆
                   </template>
                 </el-menu-item>
-                <el-menu-item>
+                <el-menu-item disabled>
                   <template #title>
                     <el-icon><DataLine /></el-icon>
                     预约
                   </template>
                 </el-menu-item>
               </el-sub-menu>
-              <el-sub-menu index="3">
+              <el-sub-menu class="safety" index="3">
                 <template #title>
                   <el-icon><Operation /></el-icon>
                   <b>个人信息</b>
@@ -269,6 +304,8 @@ function deleteAllNotification(){
       <PostCollectList :show="collect" @close="collect = false"/>
     </el-container>
   </div>
+
+
 
   <!--    <div class="exit">-->
   <!--    <el-button @click="userLogout" type="danger">退出登录</el-button>-->
@@ -320,6 +357,7 @@ function deleteAllNotification(){
 
 .user-info {
   display: flex;
+  position: relative;
   justify-content: flex-end;
   align-items: center;
 
@@ -349,4 +387,5 @@ function deleteAllNotification(){
     }
   }
 }
+
 </style>

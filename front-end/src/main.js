@@ -7,6 +7,8 @@ import 'element-plus/dist/index.css'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import {createPinia} from "pinia";
 import('@/assets/quill.css')
+// import 'https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css'
+// import 'https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js'
 
 axios.defaults.baseURL = "http://localhost:8080";
 const app = createApp(App);

@@ -108,7 +108,7 @@ const onImageLoad = () => {
 const editor = ref(false)
 
 function updateList(){
-  // if (route.name !== 'posts') return
+  if (route.name !== 'posts') return
   if (end.value){
     ElMessage.info("已经翻到底了哦")
     return
@@ -153,8 +153,8 @@ updateList()
 </script>
 
 <template>
-  <div style="display: flex;margin: 20px auto;gap: 30px;max-width: 1000px;">
-    <div style="flex: 1;height: 2000px">
+  <div style="display: flex;margin: 20px auto;gap: 30px;max-width: 1000px;" class="post">
+    <div style="flex: 1;height: 2000px" >
       <LightCard >
         <div class="create-post" @click="editor= true">
           <el-icon><EditPen/></el-icon>
