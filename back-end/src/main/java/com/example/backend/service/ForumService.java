@@ -6,10 +6,7 @@ import com.example.backend.entity.dto.Post;
 import com.example.backend.entity.dto.PostDTO;
 import com.example.backend.entity.vo.request.AddCommentVO;
 import com.example.backend.entity.vo.request.PostCreateVO;
-import com.example.backend.entity.vo.respones.PostDetailVO;
-import com.example.backend.entity.vo.respones.PostPreviewVO;
-import com.example.backend.entity.vo.respones.PostUpdateVO;
-import com.example.backend.entity.vo.respones.TopPostVO;
+import com.example.backend.entity.vo.respones.*;
 
 import java.util.List;
 
@@ -33,4 +30,5 @@ public interface ForumService extends IService<Post> {
     String updatePost(int userId, PostUpdateVO vo);
 
     String addComment(int userId, AddCommentVO vo);
+    List<CommentVO> comments(int pid,int page);
 }

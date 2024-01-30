@@ -1,6 +1,6 @@
 package com.example.backend.config;
 
-import com.baomidou.mybatisplus.annotation.DbType;
+import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import io.minio.MinioClient;
 import lombok.extern.slf4j.Slf4j;
@@ -19,28 +19,31 @@ public class WebConfiguration {
     String minioUsername;
     @Value("${minio.password}")
     String minioPassword;
+
     @Bean
-    BCryptPasswordEncoder passwordEncoder(){
+    BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
     @Bean
-    public MinioClient initMinIoClient(){
+    public MinioClient initMinIoClient() {
         log.info("MinIoClient 正在初始化");
         return MinioClient.builder()
                 .endpoint(minioUrl)
-                .credentials(minioUsername,minioPassword)
+                .credentials(minioUsername, minioPassword)
                 .build();
     }
+
     @Bean
-    public RestTemplate restTemplate(){
+    public RestTemplate restTemplate() {
         return new RestTemplate();
     }
 
     @Bean
-    public PaginationInnerInterceptor paginationInnerInterceptor(){
+    public MybatisPlusInterceptor paginationInnerInterceptor() {
         log.info("Mybatis Plus 分页器 注册中 PaginationInnerInterceptor");
-        PaginationInnerInterceptor paginationInnerInterceptor = new PaginationInnerInterceptor(DbType.MYSQL);
-        paginationInnerInterceptor.setMaxLimit(100L);
-        return paginationInnerInterceptor;
+        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+        interceptor.addInnerInterceptor(new PaginationInnerInterceptor());
+        return interceptor;
     }
 }

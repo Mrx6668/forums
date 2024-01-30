@@ -10,7 +10,9 @@ const props = defineProps({
   pid: String,
   quote: Number
 })
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close','comment'])
+
+const init = ()=> content.value = new Delta()
 
 const content = ref()
 
@@ -21,7 +23,7 @@ function submitComment() {
     content: JSON.stringify(content.value)
   },()=>{
     ElMessage.success("发表评论成功！")
-    emit('close')
+    emit('comment')
   })
 }
 </script>
@@ -29,7 +31,7 @@ function submitComment() {
 <template>
   <div>
     <el-drawer :model-value="show" title="发表评论"
-               @close="emit('close')"
+               @close="emit('close')" @open="init"
                direction="btt" size="270"
                :close-on-click-modal="false"
     >

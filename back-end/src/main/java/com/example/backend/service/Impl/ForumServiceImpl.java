@@ -9,10 +9,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.backend.entity.dto.*;
 import com.example.backend.entity.vo.request.AddCommentVO;
 import com.example.backend.entity.vo.request.PostCreateVO;
-import com.example.backend.entity.vo.respones.PostDetailVO;
-import com.example.backend.entity.vo.respones.PostPreviewVO;
-import com.example.backend.entity.vo.respones.PostUpdateVO;
-import com.example.backend.entity.vo.respones.TopPostVO;
+import com.example.backend.entity.vo.respones.*;
 import com.example.backend.mapper.*;
 import com.example.backend.service.ForumService;
 import com.example.backend.utils.CacheUtils;
@@ -30,6 +27,7 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Service
@@ -152,6 +150,13 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
         List<String> images = new ArrayList<>();
         StringBuilder previewText = new StringBuilder();
         JSONArray ops = JSONObject.parseObject(post.getContent()).getJSONArray("ops");
+        shortContent(ops, previewText, obj -> images.add(obj.toString()));
+        vo.setContent(previewText.length() > 300 ? previewText.substring(0, 300) : previewText.toString());
+        vo.setImages(images);
+        return vo;
+    }
+
+    private void shortContent(JSONArray ops, StringBuilder previewText, Consumer<Object> imageHandler) {
         for (Object op : ops) {
             Object insert = ((JSONObject) op).get("insert");
             if (insert instanceof String text) {
@@ -159,13 +164,14 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
                 previewText.append(insert);
             } else if (insert instanceof Map<?, ?> map) {
                 Optional.ofNullable(map.get("image"))
-                        .ifPresent(obj -> images.add(obj.toString()));
+                        .ifPresent(imageHandler);
             }
         }
-        vo.setContent(previewText.length() > 300 ? previewText.substring(0, 300) : previewText.toString());
-        vo.setImages(images);
-        return vo;
     }
+
+//    private void shortContent(){
+//
+//    }
 
     @Override
     public List<TopPostVO> getTopPost() {
@@ -186,6 +192,7 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
         );
         vo.setInteract(interact);
         vo.setViews(getViewsCount(pid));
+        vo.setComment(commentMapper.selectCount(Wrappers.<PostComment>query().eq("pid",pid)));
         return vo;
     }
 
@@ -327,9 +334,36 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
             return "发评论过于频繁，请稍后再试！";
         PostComment comment = new PostComment();
         comment.setUid(userId);
-        BeanUtils.copyProperties(vo,comment);
+        BeanUtils.copyProperties(vo, comment);
         comment.setTime(new Date());
         int insert = commentMapper.insert(comment);
         return insert > 0 ? null : "数据更新失败，请联系管理员";
+    }
+
+    @Override
+    public List<CommentVO> comments(int pid, int page) {
+        Page<PostComment> pages = Page.of(page, 10);
+        commentMapper.selectPage(pages, Wrappers.<PostComment>query()
+                .eq("pid", pid)
+                .orderByAsc("time")
+        );
+//        Map<Integer,String> map = new HashMap<>();
+        return pages.getRecords().stream()
+                .map(dto -> {
+                    CommentVO vo = new CommentVO();
+                    BeanUtils.copyProperties(dto, vo);
+                    if (dto.getQuote() > 0) {
+                        PostComment comment = commentMapper.selectOne(Wrappers.<PostComment>query().eq("id", dto.getQuote()));
+                        JSONObject object = JSONObject.parseObject(comment.getContent());
+                        StringBuilder builder = new StringBuilder();
+                        this.shortContent(object.getJSONArray("ops"), builder, ignore -> {
+                        });
+                        vo.setQuote(builder.toString());
+                    }
+                    CommentVO.User user = new CommentVO.User();
+                    this.fillUserDetailsByPrivacy(user,dto.getUid());
+                    vo.setUser(user);
+                    return vo;
+                }).toList();
     }
 }

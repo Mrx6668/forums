@@ -15,6 +15,7 @@ public class PostDetailVO {
     User user;
     Interact interact;
     Long views;
+    Long comment;
     @Data
     public static class User {
         Integer id;

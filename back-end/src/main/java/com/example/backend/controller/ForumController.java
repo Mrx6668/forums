@@ -95,9 +95,15 @@ public class ForumController {
         return ControllerUtils.messageHandle(() -> forumService.updatePost(userId, vo));
     }
 
-    @PostMapping("add-comment")
+    @PostMapping("/add-comment")
     public RestBean<Void> addComment(@RequestAttribute(Const.ATTR_USER_ID) int userId,
                                      @Valid @RequestBody AddCommentVO vo) {
         return ControllerUtils.messageHandle(()-> forumService.addComment(userId,vo));
+    }
+
+    @GetMapping("/comments")
+    public RestBean<List<CommentVO>> comments(@RequestParam @Min(0) int pid,
+                                        @RequestParam @Min(0) int page){
+        return RestBean.success(forumService.comments(pid,page+1));
     }
 }
