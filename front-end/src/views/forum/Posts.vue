@@ -127,6 +127,25 @@ get('api/forum/top-post',data=>{
 })
 updateList()
 
+
+import { onActivated, onDeactivated } from 'vue'
+
+const scrollTop = ref(0)
+
+
+
+onActivated(() => {
+  console.log("恢复位置"+scrollTop.value)
+  // 激活时恢复滚动位置
+  window.scrollTo(0, scrollTop.value)
+})
+
+onDeactivated(() => {
+  // 失活时保存滚动位置
+  scrollTop.value =  document.body.scrollTop || window.pageYOffset
+  console.log("保存位置"+scrollTop.value)
+})
+
 </script>
 
 <template>
@@ -218,8 +237,7 @@ updateList()
           </el-text>
           <el-divider style="margin: 8px 0"></el-divider>
           <el-text style="font-size: 14px;margin:10px;" class="mx-1" type="info">
-            fasdfasdfsadfasdfsdagfigadsfgjasdgfkjasdgfkasdfgsa
-            寒潮天气不断深入我国，中东部地区气温继续走低，并伴有大风天气，中央气象台目前已发布暴雪蓝色、寒潮黄色、大风蓝色预警。预计21至22日，内蒙古西部、东北地区中东部、西北地区东部、华北大部、黄淮东部、江淮大部、江南中东部和南部、西南地区南部、华南大部等
+            本社区禁止讨论敏感内容，请友好交流！<br>禁止讨论原神！
           </el-text>
         </LightCard>
 

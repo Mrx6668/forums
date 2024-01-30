@@ -25,7 +25,7 @@ export const useStore = defineStore('general', {
             }
         }, actions: {
             findTypeById(id) {
-                console.log("pinia.forum.types : " + this.forum.types)
+                // console.log("pinia.forum.types : " + this.forum.types)
                 for (let type of this.forum.types) {
                     if (type.id === id) return type
                 }

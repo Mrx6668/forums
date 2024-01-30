@@ -51,26 +51,28 @@ const routes = createRouter({
             children: [
                 {
                     path: '',
-                    name: 'posts',
+                    name: 'post',
                     component: () => import("@/views/forum/Forum.vue"),
                     children: [
                         {
                             path: "posts",
                             name: "posts",
-                            component: () => import('../views/forum/Posts.vue')
+                            component: () => import('../views/forum/Posts.vue'),
+                            // meta: { keepAlive: true }
                         },
                         {
                             path: "post-detail/:pid",
                             name: "post-detail",
-                            component: () => import('../views/forum/PostDetail.vue')
+                            component: () => import('../views/forum/PostDetail.vue'),
+                            // meta: { title:'帖子详情',keepAlive: false }
                         }
                     ]
                 },
-                {
-                    path: "post-detail/:pid",
-                    name: "post-detail",
-                    component:()=>import('../views/forum/PostDetail.vue')
-                },
+                // {
+                //     path: "post-detail/:pid",
+                //     name: "post-detail",
+                //     component:()=>import('../views/forum/PostDetail.vue')
+                // },
                 {
                     path: "user-setting",
                     name: "user-setting",

@@ -37,6 +37,16 @@ function userLogout() {
   });
 }
 
+import { onActivated, onDeactivated } from 'vue'
+// 在 keep-alive 组件激活时调用
+onActivated(() => {
+  console.log('onActivated')
+})
+// 在 keep-alive 组件停用时调用
+onDeactivated(() => {
+  console.log('onDeactivated')
+})
+
 </script>
 
 <template>
@@ -200,11 +210,15 @@ function userLogout() {
 <!--           <router-view> 匹配到对应的路由组件,并通过 v-slot 解构传递给 Component 变量
               将 Component变量动态绑定给 <component> 的 :is 属性
                 当路由切换时,Component 变量会改变,因此 <component> 也会切换不同的组件 -->
-            <router-view v-slot="{Component}">
-              <transition name="el-fade-in-linear" mode="out-in">
-                <component :is="Component" style="height: 100%"/>
-              </transition>
-            </router-view>
+
+              <router-view v-slot="{Component,route}">
+                <transition name="el-fade-in-linear" mode="out-in">
+<!--                  <keep-alive include="Posts">-->
+                    <component :is="Component" style="height: 100%" />
+<!--                  </keep-alive>-->
+                </transition>
+              </router-view>
+
           </el-scrollbar>
         </el-main>
       </el-container>

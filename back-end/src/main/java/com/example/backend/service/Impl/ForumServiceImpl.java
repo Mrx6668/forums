@@ -329,7 +329,7 @@ public class ForumServiceImpl extends ServiceImpl<PostMapper, Post> implements F
         comment.setUid(userId);
         BeanUtils.copyProperties(vo,comment);
         comment.setTime(new Date());
-        commentMapper.insert(comment);
-        return null;
+        int insert = commentMapper.insert(comment);
+        return insert > 0 ? null : "数据更新失败，请联系管理员";
     }
 }

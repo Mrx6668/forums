@@ -3,7 +3,18 @@ import {ref, reactive, computed} from "vue";
 import {useRoute} from "vue-router";
 import {get,post as _post} from "@/net";
 import axios from "axios";
-import {ArrowLeft, CircleCheck, Compass, EditPen, Female, Hide, Male, Pointer, Star} from "@element-plus/icons-vue";
+import {
+  ArrowLeft,
+  CircleCheck,
+  Compass,
+  EditPen,
+  Female,
+  Hide,
+  Male,
+  Plus,
+  Pointer,
+  Star, Top
+} from "@element-plus/icons-vue";
 import {QuillDeltaToHtmlConverter} from "quill-delta-to-html";
 import Card from "@/components/Card.vue";
 import PostType from "@/components/PostType.vue";
@@ -11,6 +22,7 @@ import InteractButton from "@/components/InteractButton.vue";
 import {ElMessage} from "element-plus";
 import {useStore} from "@/store";
 import PostEditor from "@/components/PostEditor.vue";
+import PostCommentEditor from "@/components/PostCommentEditor.vue";
 
 const route = useRoute();
 const pid = route.params.pid
@@ -83,10 +95,18 @@ function updatePost(editor){
     getDetail()
   })
 }
+
+
+const comment = reactive({
+  show:false,
+  text:'',
+  quote: -1
+})
 </script>
 
 <template>
   <div class="post-page" v-if="post.data">
+    <a name="top"></a>
     <div class="post-main" style="position: sticky;top: 0;z-index: 10">
       <Card style="display: flex;width: 100%">
         <el-button :icon="ArrowLeft" size="small" round plain type="info" @click="$router.go(-1)">返回列表</el-button>
@@ -158,10 +178,37 @@ function updatePost(editor){
                 :default-type="post.data.postType" :default-title="post.data.title" :default-text="post.data.content"
                 submit-button="更新帖子内容" :submit-method="updatePost" default-show-title="修改当前帖子"
                 :show="edit" @close="edit = false"/>
+    <post-comment-editor :show="comment.show" @close="comment.show = false" :pid="pid"
+                         :quote="comment.quote"/>
+    <div class="add-comment" @click="comment.show = true" style="bottom: 30px;right: 30px;">
+      <el-icon><Plus/></el-icon>
+    </div>
+<!--    <a href="#top">-->
+<!--      <div class="add-comment" style="bottom: 100px;right: 30px;">-->
+<!--        <el-icon><Top /></el-icon>-->
+<!--      </div>-->
+<!--    </a>-->
   </div>
 </template>
 
 <style scoped>
+.add-comment{
+  position: fixed;
+  width: 40px;
+  height: 40px;
+  color: var(--el-color-primary);
+  text-align: center;
+  line-height: 45px;
+  border-radius: 50%;
+  background: var(--el-bg-color-overlay);
+  box-shadow: var(--el-box-shadow-lighter);
+  transition: transform 0.5s ease;
+}
+.add-comment:hover{
+  background: var(--el-border-color-extra-light);
+  cursor: pointer;
+  transform: rotate(360deg) scale(1.05);
+}
 .post-page {
   display: flex;
   flex-direction: column;
