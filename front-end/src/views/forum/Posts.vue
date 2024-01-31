@@ -59,7 +59,7 @@ get('api/forum/types',(data)=>{
   array.push({id:0,title:'全部',color:'linear-gradient(45deg,white,red,orange,gold,green,blue)'})
   data.forEach(d=>array.push(d))
   store.forum.types = array
-  console.log("types:",store.forum.types)
+  // console.log("types:",store.forum.types)
 })
 
 function onPostSuccess() {
@@ -187,7 +187,7 @@ updateList()
       <transition name="el-fade-in" mode="out-in">
         <div v-if="postList?.length">
           <div style="margin-top: 10px;display: flex;flex-direction: column;gap: 10px"
-               v-if="store.forum.types" v-infinite-scroll="updateList" infinite-scroll-distance="15">
+               v-if="store.forum.types" v-infinite-scroll="updateList" infinite-scroll-distance="50">
             <LightCard class="post-card" v-for="item in postList" @click="router.push('/index/post-detail/'+item.id)" >
               <div style="display:flex;">
                 <div>

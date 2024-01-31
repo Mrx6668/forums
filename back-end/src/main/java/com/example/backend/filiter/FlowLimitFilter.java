@@ -1,5 +1,6 @@
 package com.example.backend.filiter;
 
+import com.example.backend.controller.exception.BlockException;
 import com.example.backend.entity.RestBean;
 import com.example.backend.utils.Const;
 import jakarta.annotation.Resource;
@@ -40,7 +41,6 @@ public class FlowLimitFilter extends HttpFilter {
             writeBlockMessage((response));
         }
 
-
     }
 
     private boolean tryCount(String ip) {
@@ -53,20 +53,20 @@ public class FlowLimitFilter extends HttpFilter {
         }
     }
 
-    private void writeBlockMessage(HttpServletResponse response) throws IOException {
+    private void writeBlockMessage(HttpServletResponse response) throws BlockException, IOException {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        response.setContentType("application/jsom;charset=utf-8");
+        response.setContentType("application/json;charset=utf-8");
         response.getWriter().write(RestBean.failure(403, "操作频繁，请稍后重试！").asJsonString());
+//        throw new BlockException();
     }
 
     private boolean limitPeriodCheck(String ip) {
-
         if (Boolean.TRUE.equals(template.hasKey(Const.FLOW_LIMIT_COUNTER + ip))) {
             //检查是否存在该ip的Redis计数器
             Long increment = Optional.ofNullable(template.opsForValue().increment(Const.FLOW_LIMIT_COUNTER + ip)).orElse(0L);
             //如果存在，则自增
             if (increment > limit) {
-                log.info("封禁ip：{}，{}s内访问{}次，封禁{}秒", ip, period, increment,block);
+                log.info("封禁ip：{}，{}s内访问{}次，封禁{}秒", ip, period, increment, block);
                 //如果数值》10，则丢进封禁列表
                 template.opsForValue().set(Const.FLOW_LIMIT_BLOCK + ip, "", block, TimeUnit.SECONDS);
                 return false;

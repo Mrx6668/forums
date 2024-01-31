@@ -21,7 +21,7 @@ function init() {
 }
 
 function deleteCollect(pid,index) {
-  console.log("pid:" + pid)
+  // console.log("pid:" + pid)
   post(`api/forum/remove-collect/${pid}`, null, () => {
     // init()
     list.value.splice(index, 1)

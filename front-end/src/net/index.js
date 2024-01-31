@@ -1,5 +1,7 @@
 import axios from "axios";
 import {ElMessage} from "element-plus";
+import routes from "@/router";
+import router from "@/router";
 
 const authItemName = "access_token"
 const defaultFailure = (message, code, url) => {
@@ -7,6 +9,10 @@ const defaultFailure = (message, code, url) => {
     ElMessage.warning(`error:${message}`);
 }
 const defaultError = (err) => {
+    if (err && err.response && err?.response.status === 403) {
+        // ElMessage.warning("请求过于频繁，请稍后再试！")
+        router.push('/error')
+    }
     console.warn(`error:${err}`);
     ElMessage.warning(`发生了错误，错误信息：${err}`);
 }
@@ -63,7 +69,9 @@ function internalGet(url, header, success, failure, error = defaultError) {
         } else {
             failure(data.message, data.code, url)
         }
-    }).catch(err => error(err))
+    }).catch(err => {
+        error(err)
+    })
 }
 
 function get(url, success, failure = defaultFailure){

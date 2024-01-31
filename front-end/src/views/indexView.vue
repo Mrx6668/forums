@@ -29,9 +29,10 @@ const searchInput = reactive({
 })
 
 get('api/user/info', (data) => {
-  console.log(data);
+  // console.log(data);
   store.user = data
   loading.value = false
+  if (store.user.avatar === null || store.user.avatar === ''){guide()}
 })
 
 function userLogout() {
@@ -73,6 +74,7 @@ function deleteAllNotification(){
 
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
+import routes from "@/router";
 
 
 
@@ -83,7 +85,7 @@ function guide(){
       { element: '.top-nav', popover: { title: '欢迎来到本论坛', description: '接下来将会进行引导，介绍基本使用\n（仅供demo测试）' } },
       { element: '.el-aside', popover: { title: '这里是菜单', description: '主要功能在这里，还有部分未开发功能' } },
       { element: '.user-info', popover: { title: '用户信息区域', description: '在这里查看消息，个人收藏，或者退出登录' } },
-      { element: '.post', popover: { title: '主要信息区域', description: '在这里查看帖子列表，点击查看详情，进行主要的互动（点赞、评论、回复等）。还能查看公告、天气信息' } },
+      { element: '.post', popover: { title: '主要信息区域', description: '在这里查看帖子列表，支持无限向下滚动，点击查看详情，进行主要的互动（点赞、评论、回复等）。还能查看公告、天气信息' } },
       { element: '.safety', popover: { title: '个人信息修改', description: '在这里修改个人信息：修改密码、邮箱、联系方式、头像、隐私设置等等' } },
       { element: 'main', popover: { title: '完成', description: '如果频繁见到此指引，请上传一个头像' } },
     ]
@@ -92,7 +94,6 @@ function guide(){
 }
 
 
-if (store.user.avatar === null){guide()}
 
 </script>
 
@@ -165,10 +166,6 @@ if (store.user.avatar === null){guide()}
                 <el-dropdown-item @click="collect = true">
                   <el-icon><Star/></el-icon>
                   我的收藏
-                </el-dropdown-item>
-                <el-dropdown-item>
-                  <el-icon><Message/></el-icon>
-                  我的消息
                 </el-dropdown-item>
                 <el-dropdown-item divided @click="userLogout">
                   <el-icon><Back/></el-icon>

@@ -9,7 +9,7 @@ get('api/forum/types',(data)=>{
   array.push({id:0,title:'全部',color:'linear-gradient(45deg,white,red,orange,gold,green,blue)'})
   data.forEach(d=>array.push(d))
   store.forum.types = array
-  console.log("types:",store.forum.types)
+  // console.log("types:",store.forum.types)
 })
 </script>
 

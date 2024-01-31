@@ -94,6 +94,11 @@ const routes = createRouter({
                 //     component:()=>import('../views/forum/PostDetail.vue')
                 // },
             ]
+        },
+        {
+            path: '/error',
+            name: 'error',
+            component: () => import('../components/Error.vue')
         }
     ]
 })

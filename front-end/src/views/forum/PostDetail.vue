@@ -40,7 +40,7 @@ const edit = ref(false);
 
 function getDetail() {
   get(`api/forum/post?pid=${pid}`, (data) => {
-    console.log("post detail: " + data)
+    // console.log("post detail: " + data)
     post.data = data
     // 循环赋值
     for (let key in interact) {

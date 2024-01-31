@@ -3,6 +3,7 @@ package com.example.backend.controller.exception;
 import com.example.backend.entity.RestBean;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
 @RestControllerAdvice
-public class ValidationController {
+public class GlobalExceptionHandler {
     @ExceptionHandler(ValidationException.class)
     public RestBean<Void> validationException(ValidationException e) {
         log.warn("ValidationException: " + e.getMessage());
@@ -28,5 +29,10 @@ public class ValidationController {
         }
 
         return RestBean.failure(400, errorMesssage.toString());
+    }
+
+    @ExceptionHandler(BlockException.class)
+    public RestBean<Void> handleBlockException(BlockException e){
+        return new RestBean<>(e.getCode(),null,e.getMessage());
     }
 }
