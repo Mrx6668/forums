@@ -158,8 +158,8 @@ function guide(){
           <el-dropdown size="large">
             <el-avatar  :src="store.avatarUrl"/>
             <template #dropdown>
-              <el-dropdown-menu @click="routes.push('/index/user-setting')">
-                <el-dropdown-item>
+              <el-dropdown-menu >
+                <el-dropdown-item @click="routes.push('/index/user-setting')">
                   <el-icon><Operation/></el-icon>
                   个人设置
                 </el-dropdown-item>

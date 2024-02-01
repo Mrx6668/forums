@@ -25,8 +25,8 @@ public class CorsFilter extends HttpFilter {
         chain.doFilter(request,response);
     }
     public void addCorsHeader(HttpServletRequest request, HttpServletResponse response){
-//        response.addHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));//获取发起请求的原始站点运行跨域
-        response.addHeader("Access-Control-Allow-Origin", "http://localhost:5173");//允许指定站点跨域
+        response.addHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));//获取发起请求的原始站点运行跨域
+//        response.addHeader("Access-Control-Allow-Origin", "http://localhost:5173");//允许指定站点跨域
         response.addHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS,PUT,DELETE");
         response.addHeader("Access-Control-Allow-Headers","Authorization,Content-Type");
     }
